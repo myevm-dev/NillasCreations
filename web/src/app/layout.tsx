@@ -15,7 +15,7 @@ const playfair = Playfair_Display({
 })
 
 export const metadata: Metadata = {
-  title: "Sweet Artisan Bakery - Custom Baking & Pastry Service",
+  title: "Nilla's Creations - Custom Baking & Pastry Service",
   description: "Handcrafted baked goods and custom pastries made with love",
   generator: "v0.app",
 }

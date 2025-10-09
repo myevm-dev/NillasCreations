@@ -7,48 +7,49 @@ import { CartPanel } from "../components/cart-panel"
 
 const subscriptionTiers = [
   {
-    name: "Essential",
-    price: 60,
-    description: "Perfect for individuals or small households",
+    name: "Coffee Break",
+    price: 52, // ~$55 value w/ ~5% off
+    description: "Great for small offices, salons, and front desks",
     features: [
-      "4-6 assorted pastries",
-      "1 artisan bread loaf",
-      "2 seasonal treats",
-      "Weekly delivery",
-      "Flexible cancellation",
+      "1× Loaf Banana Bread (8 slices)",
+      "12× Chocolate Chip Cookies",
+      "12× Blueberry Muffins",
+      "Weekly delivery included",
+      "Flexible pause/skip/cancel"
     ],
   },
   {
-    name: "Deluxe",
-    price: 115,
-    description: "Ideal for families and pastry enthusiasts",
+    name: "Office Favorites",
+    price: 89, // ~$94 value w/ ~5% off
+    description: "Perfect for teams (10–20 people)",
     features: [
-      "8-10 assorted pastries",
-      "2 artisan bread loaves",
-      "4 seasonal treats",
-      "1 specialty cake or tart",
-      "Weekly delivery",
+      "18× Brownies",
+      "18× Rice Crispy Bars",
+      "1× Loaf Banana Bread (8 slices)",
+      "12× White Choc Cranberry Oatmeal Cookies",
+      "Weekly delivery included",
       "Priority support",
-      "Flexible cancellation",
+      "Flexible pause/skip/cancel"
     ],
     popular: true,
   },
   {
-    name: "Premium",
-    price: 170,
-    description: "The ultimate baking experience",
+    name: "Shop Partner",
+    price: 181, // ~$191 value w/ ~5% off
+    description: "Designed for coffee shops & busy offices",
     features: [
-      "12-15 assorted pastries",
-      "3 artisan bread loaves",
-      "6 seasonal treats",
-      "2 specialty cakes or tarts",
-      "Weekly delivery",
+      "30× Vanilla Cake Pops",
+      "30× Chocolate Cake Pops",
+      "1× Loaf Banana Bread + 1× Loaf Pumpkin Bread",
+      "12× Blueberry Muffins & 12× Chocolate Chip Cookies",
+      "Weekly delivery included",
       "Priority support",
       "Custom requests included",
-      "Flexible cancellation",
+      "Flexible pause/skip/cancel"
     ],
   },
-]
+];
+
 
 export default function SubscribePage() {
   return (
@@ -65,10 +66,10 @@ export default function SubscribePage() {
           <h1 className="text-5xl md:text-6xl font-serif font-bold text-balance text-foreground">
             Weekly Variety Baskets
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Enjoy a curated selection of our finest baked goods delivered fresh to your door every week. Choose the
-            perfect size for your household.
-          </p>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                Weekly bakery bundles made for <strong>coffee shops, offices, salons, and co-working spaces</strong>.
+                Fresh, consistent, and ready within 48 hours—save with our subscription pricing.
+            </p>
         </div>
       </section>
 

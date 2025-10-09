@@ -1,8 +1,10 @@
 import Link from "next/link"
+import Image from "next/image";
 import { ArrowRight, Clock, Heart, Award } from "lucide-react"
 import { Button } from "../app/components/ui/button"
 import { Header } from "../app/components/header"
 import { CartPanel } from "../app/components/cart-panel"
+import heroImg from "../../public/artisandisplay.jpg";
 
 export default function HomePage() {
   return (
@@ -15,12 +17,11 @@ export default function HomePage() {
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
-              <h1 className="text-5xl md:text-7xl font-serif font-bold text-balance leading-tight text-foreground">
-                Artisan baking meets custom perfection
+              <h1 className="text-5xl md:text-6xl font-serif font-bold text-balance leading-tight text-foreground">
+                Freshly baked joy, made to order
               </h1>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Transform your celebrations into unforgettable moments with our handcrafted pastries and custom baked
-                goods, made fresh daily with premium ingredients.
+                From classic banana bread to custom sweet treats, every order is baked fresh to your needs, ready within 48 hours or when you need it. Taste the comfort of homemade, every time.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button asChild size="lg" className="gap-2">
@@ -38,10 +39,13 @@ export default function HomePage() {
               </div>
             </div>
             <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted">
-              <img
-                src="/artisan-bakery-display-with-fresh-pastries-and-cak.jpg"
+              <Image
+                src="/artisandisplay.jpg"   
                 alt="Artisan bakery display"
-                className="object-cover w-full h-full"
+                fill
+                className="object-cover"
+                priority
+                unoptimized            
               />
             </div>
           </div>
@@ -56,9 +60,9 @@ export default function HomePage() {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent text-accent-foreground">
                 <Clock className="h-8 w-8" />
               </div>
-              <h3 className="text-xl font-serif font-bold text-foreground">Fresh Daily</h3>
+              <h3 className="text-xl font-serif font-bold text-foreground">Fast Turnaround</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Every item is baked fresh each morning using traditional techniques and the finest ingredients.
+                Every item is baked fresh to be ready in 48 hours using the finest ingredients.
               </p>
             </div>
             <div className="text-center space-y-4">
@@ -76,7 +80,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl font-serif font-bold text-foreground">Custom Orders</h3>
               <p className="text-muted-foreground leading-relaxed">
-                From weddings to birthdays, we create bespoke designs tailored to your special occasion.
+                For birthdays or anyday, we create bespoke designs tailored to your special occasion.
               </p>
             </div>
           </div>

@@ -15,8 +15,8 @@ export function Header() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
           <div className="flex flex-col">
-            <span className="text-xl font-serif font-bold text-foreground">Sweet Artisan</span>
-            <span className="text-xs text-muted-foreground tracking-wider">BAKERY</span>
+            <span className="text-xl font-serif font-bold text-foreground">Nilla's</span>
+            <span className="text-xs text-muted-foreground tracking-wider">Creations</span>
           </div>
         </Link>
 
@@ -27,12 +27,15 @@ export function Header() {
           <Link href="/shop" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
             Shop
           </Link>
-          <Link href="#about" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
-            About
-          </Link>
-          <Link href="#contact" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+
+        <Link
+            href="mailto:KC@nillascreations.com"
+            className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+            >
             Contact
-          </Link>
+        </Link>
+
+
         </nav>
 
         <div className="flex items-center gap-4">

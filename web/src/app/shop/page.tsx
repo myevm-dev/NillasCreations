@@ -2,71 +2,72 @@ import { Header } from "../components/header"
 import { CartPanel } from "../components/cart-panel"
 import { ProductCard } from "../components/product-card"
 
-const products = [
+export const products = [
   {
     id: 1,
-    name: "Classic Croissant",
-    price: 4.5,
-    image: "/buttery-golden-croissant-on-white-background.jpg",
-    description: "Buttery, flaky layers of perfection",
+    name: "Loaf Banana Bread (8 slices)",
+    price: 13,
+    image: "/shopitemphotosoon.png",
+    description: "Moist, banana-rich loaf with a hint of vanilla—perfect toasted with butter."
   },
   {
     id: 2,
-    name: "Chocolate Éclair",
-    price: 6.0,
-    image: "/chocolate-eclair-with-glossy-glaze.jpg",
-    description: "Choux pastry filled with vanilla cream",
+    name: "Loaf Pumpkin Bread (8 slices)",
+    price: 16,
+    image: "/shopitemphotosoon.png",
+    description: "Spiced pumpkin loaf with cinnamon and nutmeg for cozy, fall-forward flavor."
   },
   {
     id: 3,
-    name: "Strawberry Tart",
-    price: 8.5,
-    image: "/fresh-strawberry-tart-with-custard.jpg",
-    description: "Fresh berries on silky custard",
+    name: "18x Brownies",
+    price: 27,
+    image: "/shopitemphotosoon.png",
+    description: "Fudgy chocolate brownies with a crackly top—rich, dense, and crowd-pleasing."
   },
   {
     id: 4,
-    name: "Almond Biscotti",
-    price: 3.5,
-    image: "/almond-biscotti-cookies.jpg",
-    description: "Twice-baked Italian cookies",
+    name: "18x Rice Crispy Bars",
+    price: 30,
+    image: "/shopitemphotosoon.png",
+    description: "Chewy, buttery marshmallow bars with the perfect crispy bite."
   },
   {
     id: 5,
-    name: "Lemon Meringue Pie",
-    price: 12.0,
-    image: "/lemon-meringue-pie-slice.jpg",
-    description: "Tangy lemon with fluffy meringue",
+    name: "30x Vanilla Cake Pops",
+    price: 60,
+    image: "/shopitemphotosoon.png",
+    description: "Classic vanilla cake dipped in smooth coating and finished with sprinkles."
   },
   {
     id: 6,
-    name: "Cinnamon Roll",
-    price: 5.5,
-    image: "/cinnamon-roll-with-cream-cheese-frosting.jpg",
-    description: "Warm spiced roll with cream cheese",
+    name: "30x Chocolate Cake Pops",
+    price: 60,
+    image: "/shopitemphotosoon.png",
+    description: "Decadent chocolate cake pops with a glossy chocolate shell."
   },
   {
     id: 7,
-    name: "Macaron Box",
-    price: 18.0,
-    image: "/colorful-french-macarons-in-box.jpg",
-    description: "Assorted flavors, 12 pieces",
+    name: "12x White Chocolate Cranberry Oatmeal Cookies",
+    price: 24,
+    image: "/shopitemphotosoon.png",
+    description: "Soft oatmeal cookies studded with tart cranberries and creamy white chocolate."
   },
   {
     id: 8,
-    name: "Sourdough Loaf",
-    price: 7.0,
-    image: "/artisan-sourdough-loaf.png",
-    description: "Crusty artisan bread, naturally leavened",
+    name: "12x Chocolate Chip Cookies",
+    price: 18,
+    image: "/shopitemphotosoon.png",
+    description: "Golden-edge, soft-center cookies packed with semisweet chocolate chips."
   },
   {
     id: 9,
-    name: "Tiramisu Slice",
-    price: 9.0,
-    image: "/tiramisu-cake-slice-with-cocoa.jpg",
-    description: "Coffee-soaked layers with mascarpone",
-  },
-]
+    name: "12x Blueberry Muffins",
+    price: 24,
+    image: "/shopitemphotosoon.png",
+    description: "Bakery-style muffins bursting with juicy blueberries and a tender crumb."
+  }
+] as const;
+
 
 export default function ShopPage() {
   return (
@@ -79,7 +80,7 @@ export default function ShopPage() {
           <div className="text-center mb-12 space-y-4">
             <h1 className="text-4xl md:text-5xl font-serif font-bold text-foreground">Our Collection</h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Handcrafted daily with premium ingredients and traditional techniques
+              Handcrafted with premium ingredients and traditional techniques
             </p>
           </div>
 
