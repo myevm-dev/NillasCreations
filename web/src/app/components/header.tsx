@@ -16,9 +16,8 @@ export function Header() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
           <div className="flex flex-col">
-            {/* either form below is safe */}
-            <<span className="text-xl font-serif font-bold text-foreground">{"Nilla's"}</span>
-          
+            <span className="text-xl font-serif font-bold text-foreground">{"Nilla's"}</span>
+            {/* or: Nilla&apos;s */}
             <span className="text-xs text-muted-foreground tracking-wider">Creations</span>
           </div>
         </Link>
