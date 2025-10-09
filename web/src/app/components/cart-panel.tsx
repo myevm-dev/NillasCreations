@@ -8,8 +8,6 @@ import { Button } from "./ui/button";
 import { useCart } from "./cart-provider";
 import { useRouter } from "next/navigation";
 
-
-
 export type CartItem = {
   id: string;
   name: string;
@@ -21,6 +19,7 @@ export type CartItem = {
 type Details = {
   name: string;
   phone: string;
+  email?: string;                 // NEW: optional email for receipt
   isCell: boolean;
   notes: string;
   fulfillMethod: "pickup" | "delivery";
@@ -53,17 +52,21 @@ function computeDefaultDelivery(now = new Date()) {
   return { date, time };
 }
 
-async function placeOrderAndDownload(orderPayload: any) {
+async function placeOrder(orderPayload: any) {
   const res = await fetch("/api/orders", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(orderPayload),
   });
   const data = await res.json();
-
   if (!data.ok) throw new Error(data.error || "Order failed");
+  return data as { ok: true; orderNumber: string; receiptHTML: string; filename: string };
+}
 
-  // Download HTML receipt (PDF can be swapped later)
+async function placeOrderAndDownload(orderPayload: any) {
+  const data = await placeOrder(orderPayload);
+
+  // Download HTML receipt (PDF later if you want)
   const blob = new Blob([data.receiptHTML], { type: "text/html;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -77,7 +80,6 @@ async function placeOrderAndDownload(orderPayload: any) {
   return data.orderNumber;
 }
 
-
 export function CartPanel() {
   const { items, removeItem, updateQuantity, total, isOpen, setIsOpen } = useCart();
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -86,6 +88,7 @@ export function CartPanel() {
   const [details, setDetails] = useState<Details>({
     name: "",
     phone: "",
+    email: "",                   // NEW: start empty
     isCell: true,
     notes: "",
     fulfillMethod: "delivery",
@@ -93,6 +96,10 @@ export function CartPanel() {
     time: earliest.time,
     address: { line1: "", line2: "", city: "", state: "", zip: "" },
   });
+
+  // Step 3 choices
+  const [wantsDownload, setWantsDownload] = useState(true);
+  const [wantsEmailReceipt, setWantsEmailReceipt] = useState(false);
 
   const MIN_TIME_GENERAL = "09:00";
   const MAX_TIME = "21:00";
@@ -119,6 +126,25 @@ export function CartPanel() {
         details.address.city.trim() &&
         details.address.state.trim() &&
         details.address.zip.trim()));
+
+  // Build the payload we POST
+  const buildPayload = () => ({
+    customer: {
+      name: details.name,
+      phone: details.phone,
+      email: details.email?.trim() || undefined,
+      isCell: details.isCell,
+    },
+    items: items.map((i) => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })),
+    fulfillment:
+      details.fulfillMethod === "delivery"
+        ? { type: "delivery", date: details.date, time: details.time, address: details.address }
+        : { type: "pickup", date: details.date, time: details.time },
+    notes: details.notes,
+    payment: { method: "COD", paid: false },
+    // The API route should read this and email the customer copy if true:
+    sendCustomerCopy: Boolean(wantsEmailReceipt && details.email && details.email.includes("@")),
+  });
 
   return (
     <>
@@ -153,14 +179,14 @@ export function CartPanel() {
                   <div className="flex flex-col items-center justify-center h-full text-center">
                     <p className="text-muted-foreground mb-2">Your cart is empty</p>
                     <Button
-                        onClick={() => {
-                            setIsOpen(false);
-                            router.push("/shop");
-                        }}
-                        variant="outline"
-                        >
-                        Continue Shopping
-                        </Button>
+                      onClick={() => {
+                        setIsOpen(false);
+                        router.push("/shop");
+                      }}
+                      variant="outline"
+                    >
+                      Continue Shopping
+                    </Button>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -250,6 +276,13 @@ export function CartPanel() {
                   placeholder="Phone"
                   value={details.phone}
                   onChange={(e) => setDetails({ ...details, phone: e.target.value })}
+                />
+                <input
+                  className="w-full rounded-md border px-3 py-2 bg-background"
+                  placeholder="Email (optional, to receive a receipt)"
+                  type="email"
+                  value={details.email || ""}
+                  onChange={(e) => setDetails({ ...details, email: e.target.value })}
                 />
                 <label className="flex items-center gap-2 text-sm text-muted-foreground">
                   <input
@@ -359,13 +392,39 @@ export function CartPanel() {
                   <p className="text-sm text-muted-foreground">
                     {details.address.line1}
                     {details.address.line2 ? `, ${details.address.line2}` : ""}
-                    {details.address.city ? `, ${details.address.city}` : ""} 
-                    {details.address.state} {details.address.zip}
+                    {details.address.city ? `, ${details.address.city}` : ""} {details.address.state}{" "}
+                    {details.address.zip}
                   </p>
                   {details.notes && (
                     <p className="text-sm text-muted-foreground">Notes: {details.notes}</p>
                   )}
                   <p className="font-semibold mt-2">Total: ${total.toFixed(2)}</p>
+                </div>
+
+                {/* Receipt options */}
+                <div className="rounded-lg border border-border p-4 space-y-3">
+                  <p className="font-medium">Receipt</p>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 accent-primary"
+                      checked={wantsDownload}
+                      onChange={(e) => setWantsDownload(e.target.checked)}
+                    />
+                    Download receipt after placing order
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 accent-primary"
+                      checked={wantsEmailReceipt}
+                      onChange={(e) => setWantsEmailReceipt(e.target.checked)}
+                      disabled={!details.email || !details.email.includes("@")}
+                    />
+                    Email me a copy {(!details.email || !details.email.includes("@")) && (
+                      <span className="text-muted-foreground">(enter a valid email above)</span>
+                    )}
+                  </label>
                 </div>
               </div>
             )}
@@ -388,10 +447,21 @@ export function CartPanel() {
               {step === 3 && (
                 <Button
                   className="flex-1 bg-green-600 hover:bg-green-700"
-                  onClick={() => {
-                    alert("Order placed! Cash on delivery confirmed.");
-                    setIsOpen(false);
-                    setStep(1);
+                  onClick={async () => {
+                    try {
+                      const payload = buildPayload();
+                      if (wantsDownload) {
+                        await placeOrderAndDownload(payload);
+                      } else {
+                        await placeOrder(payload);
+                      }
+                      // Success UX — you can replace with toast
+                      alert("Order placed! Cash on delivery confirmed.");
+                      setIsOpen(false);
+                      setStep(1);
+                    } catch (err: any) {
+                      alert(err?.message ?? "Failed to place order.");
+                    }
                   }}
                 >
                   Confirm Order
