@@ -61,17 +61,19 @@ export function Header() {
               <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-border bg-card p-3 shadow-md">
                 <div className="flex flex-col gap-2">
                   <a
-                    href="tel:+15551234567"  // TODO: replace with real phone
+                    href="tel:+19704816347" // replace with real phone if needed
                     className="rounded-md px-3 py-2 hover:bg-muted transition-colors text-sm font-medium"
                   >
                     (970) 481-6347
                   </a>
+                  {/*
                   <a
-                    href="mailto:kc@nillascreations.com" // TODO: replace with real email
+                    href="mailto:kc@nillascreations.com" // commented out per request
                     className="rounded-md px-3 py-2 hover:bg-muted transition-colors text-sm font-medium break-all"
                   >
                     kc@nillascreations.com
                   </a>
+                  */}
                 </div>
               </div>
             )}
@@ -129,17 +131,19 @@ export function Header() {
               <div className="ml-2 mt-1 rounded-lg border border-border bg-card p-3 shadow-sm">
                 <div className="flex flex-col gap-2">
                   <a
-                    href="tel:+9704816347" // TODO: replace
+                    href="tel:+19704816347" // replace with real phone if needed
                     className="rounded-md px-3 py-2 hover:bg-muted transition-colors text-sm font-medium"
                   >
                     (970) 481-6347
                   </a>
+                  {/*
                   <a
-                    href="mailto:kc@nillascreations.com" // TODO: replace
+                    href="mailto:KC@NillasCreations.com" // commented out per request
                     className="rounded-md px-3 py-2 hover:bg-muted transition-colors text-sm font-medium break-all"
                   >
                     KC@NillasCreations.com
                   </a>
+                  */}
                 </div>
               </div>
             )}

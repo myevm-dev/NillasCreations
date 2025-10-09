@@ -53,6 +53,31 @@ function computeDefaultDelivery(now = new Date()) {
   return { date, time };
 }
 
+async function placeOrderAndDownload(orderPayload: any) {
+  const res = await fetch("/api/orders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(orderPayload),
+  });
+  const data = await res.json();
+
+  if (!data.ok) throw new Error(data.error || "Order failed");
+
+  // Download HTML receipt (PDF can be swapped later)
+  const blob = new Blob([data.receiptHTML], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = data.filename || "receipt.html";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+
+  return data.orderNumber;
+}
+
+
 export function CartPanel() {
   const { items, removeItem, updateQuantity, total, isOpen, setIsOpen } = useCart();
   const [step, setStep] = useState<1 | 2 | 3>(1);
