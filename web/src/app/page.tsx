@@ -31,11 +31,12 @@ export default function HomePage() {
                   </Link>
                 </Button>
 
-                <ContactButton phone="(970)481-6347" email="KC@NillasCreations.com" />
+                
 
                 <Button asChild variant="secondary" size="lg">
                   <Link href="/subscribe">Subscribe</Link>
                 </Button>
+                <ContactButton phone="(970)481-6347" email="KC@NillasCreations.com" />
               </div>
             </div>
 
