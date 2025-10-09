@@ -1,9 +1,9 @@
-import Link from "next/link"
+import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Clock, Heart, Award } from "lucide-react"
-import { Button } from "../app/components/ui/button"
-import { Header } from "../app/components/header"
-import { CartPanel } from "../app/components/cart-panel"
+import { ArrowRight, Clock, Heart, Award } from "lucide-react";
+import { Button } from "../app/components/ui/button";
+import { Header } from "../app/components/header";
+import { CartPanel } from "../app/components/cart-panel";
 
 export default function HomePage() {
   return (
@@ -12,7 +12,7 @@ export default function HomePage() {
       <CartPanel />
 
       {/* Hero Section */}
-      <section className="relative py-20 md:py-32 px-4">
+      <section className="relative py-16 md:py-24 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
@@ -37,15 +37,18 @@ export default function HomePage() {
                 </Button>
               </div>
             </div>
-            <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted">
-              <Image
-                src="/heroimage.png"   
-                alt="Display"
-                fill
-                className="object-cover"
-                priority
-                unoptimized            
-              />
+
+            {/* Image: intrinsic size, fills width, keeps ratio */}
+<div className="rounded-2xl overflow-hidden bg-muted">
+  <Image
+    src="/heroimage.png"
+    alt="Bakery display"
+    width={740}        // ← use your actual image width
+    height={608}       // ← use your actual image height
+    className="w-full h-auto"  // keeps ratio, no letterboxing
+    priority
+  />
+
             </div>
           </div>
         </div>
@@ -105,5 +108,5 @@ export default function HomePage() {
         </div>
       </section>
     </div>
-  )
+  );
 }
