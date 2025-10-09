@@ -6,6 +6,9 @@ import Image from "next/image";
 import { X, Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useCart } from "./cart-provider";
+import { useRouter } from "next/navigation";
+
+
 
 export type CartItem = {
   id: string;
@@ -53,7 +56,7 @@ function computeDefaultDelivery(now = new Date()) {
 export function CartPanel() {
   const { items, removeItem, updateQuantity, total, isOpen, setIsOpen } = useCart();
   const [step, setStep] = useState<1 | 2 | 3>(1);
-
+  const router = useRouter();
   const earliest = useMemo(() => computeDefaultDelivery(), []);
   const [details, setDetails] = useState<Details>({
     name: "",
@@ -124,9 +127,15 @@ export function CartPanel() {
                 {items.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center">
                     <p className="text-muted-foreground mb-2">Your cart is empty</p>
-                    <Button onClick={() => setIsOpen(false)} variant="outline">
-                      Continue Shopping
-                    </Button>
+                    <Button
+                        onClick={() => {
+                            setIsOpen(false);
+                            router.push("/shop");
+                        }}
+                        variant="outline"
+                        >
+                        Continue Shopping
+                        </Button>
                   </div>
                 ) : (
                   <div className="space-y-4">
