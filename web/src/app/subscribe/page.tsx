@@ -133,7 +133,7 @@ export default function SubscribePage() {
             <div className="space-y-3">
               <h3 className="text-xl font-serif font-bold text-foreground">Convenient Delivery</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Choose your delivery day and we’ll bring fresh pastries right to your doorstep every week.
+                Choose your delivery day and we will bring fresh pastries right to your doorstep every week.
               </p>
             </div>
             <div className="space-y-3">
@@ -159,7 +159,7 @@ export default function SubscribePage() {
             Not ready to subscribe?
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Browse our full selection and order individual items whenever you’d like.
+            Browse our full selection and order individual items whenever you would like.
           </p>
           <Button asChild size="lg" variant="outline" className="gap-2 bg-transparent">
             <Link href="/shop">
