@@ -159,7 +159,7 @@ export default function SubscribePage() {
             Not ready to subscribe?
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Browse our full selection and order individual items whenever you&apos;d like.
+            Browse our full selection and order individual items whenever you’d like.
           </p>
           <Button asChild size="lg" variant="outline" className="gap-2 bg-transparent">
             <Link href="/shop">
