@@ -73,9 +73,7 @@ export function Header() {
             <Link href="/subscribe" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
               Subscribe
             </Link>
-            <Link href="#about" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
-              About
-            </Link>
+
             <Link
               href="mailto:KC@nillascreations.com"
               className="text-sm font-medium text-foreground hover:text-primary transition-colors"
