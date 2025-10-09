@@ -11,9 +11,9 @@ const subscriptionTiers = [
     price: 52, // ~$55 value w/ ~5% off
     description: "Great for small offices, salons, and front desks",
     features: [
-      "1× Loaf Banana Bread (8 slices)",
+      "1× Loaf Banana or Pumpkin Bread (8 slices)",
       "12× Chocolate Chip Cookies",
-      "12× Blueberry Muffins",
+      "9× Brownies",
       "Weekly delivery included",
       "Flexible pause/skip/cancel"
     ],
@@ -21,11 +21,11 @@ const subscriptionTiers = [
   {
     name: "Office Favorites",
     price: 89, // ~$94 value w/ ~5% off
-    description: "Perfect for teams (10–20 people)",
+    description: "Perfect for teams.",
     features: [
       "18× Brownies",
       "18× Rice Crispy Bars",
-      "1× Loaf Banana Bread (8 slices)",
+      "1× Loaf Banana or Pumpkin Bread (8 slices)",
       "12× White Choc Cranberry Oatmeal Cookies",
       "Weekly delivery included",
       "Priority support",
@@ -107,7 +107,7 @@ export default function SubscribePage() {
                 </CardContent>
                 <CardFooter>
                   <Button className="w-full gap-2" variant={tier.popular ? "default" : "outline"} size="lg">
-                    Subscribe Now
+                    Subscribe Coming Soon
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </CardFooter>
