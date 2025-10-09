@@ -39,8 +39,8 @@ export default function HomePage() {
             </div>
             <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted">
               <Image
-                src="/artisandisplay.jpg"   
-                alt="Artisan bakery display"
+                src="/heroimage.png"   
+                alt="Display"
                 fill
                 className="object-cover"
                 priority
