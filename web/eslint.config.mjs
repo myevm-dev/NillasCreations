@@ -9,17 +9,29 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
-const eslintConfig = [
+export default [
+  // Next.js + TS base
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+
+  // Project rules
   {
-    ignores: [
-      "node_modules/**",
-      ".next/**",
-      "out/**",
-      "build/**",
-      "next-env.d.ts",
-    ],
+    rules: {
+      // ⬇️ allow apostrophes in JSX text
+      "react/no-unescaped-entities": "off",
+      // ⬇️ don't block builds on unused vars; allow _prefixed ignores
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          varsIgnorePattern: "^_",
+          argsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_"
+        }
+      ]
+    },
+  },
+
+  // Ignores
+  {
+    ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts"],
   },
 ];
-
-export default eslintConfig;

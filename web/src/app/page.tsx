@@ -4,7 +4,6 @@ import { ArrowRight, Clock, Heart, Award } from "lucide-react"
 import { Button } from "../app/components/ui/button"
 import { Header } from "../app/components/header"
 import { CartPanel } from "../app/components/cart-panel"
-import heroImg from "../../public/artisandisplay.jpg";
 
 export default function HomePage() {
   return (
