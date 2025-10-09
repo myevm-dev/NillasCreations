@@ -4,6 +4,7 @@ import { ArrowRight, Clock, Heart, Award } from "lucide-react";
 import { Button } from "../app/components/ui/button";
 import { Header } from "../app/components/header";
 import { CartPanel } from "../app/components/cart-panel";
+import ContactButton from "../app/components/contact-button";
 
 export default function HomePage() {
   return (
@@ -29,9 +30,9 @@ export default function HomePage() {
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg">
-                  <Link href="#contact">Book Consultation</Link>
-                </Button>
+
+                <ContactButton phone="(970)481-6347" email="KC@NillasCreations.com" />
+
                 <Button asChild variant="secondary" size="lg">
                   <Link href="/subscribe">Subscribe</Link>
                 </Button>

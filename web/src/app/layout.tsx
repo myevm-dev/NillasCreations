@@ -7,6 +7,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { CartProvider } from "../app/components/cart-provider"
 import { Suspense } from "react"
 import "./globals.css"
+import { Footer } from "../app/components/Footer";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -32,6 +33,7 @@ export default function RootLayout({
           <CartProvider>{children}</CartProvider>
         </Suspense>
         <Analytics />
+        <Footer />
       </body>
     </html>
   )
