@@ -68,7 +68,7 @@ export default function SubscribePage() {
           </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                 Weekly bakery bundles made for <strong>coffee shops, offices, salons, and co-working spaces</strong>.
-                Fresh, consistent, and ready within 48 hours—save with our subscription pricing.
+                Fresh, consistent, and ready within 48 hours. <br/>save with our subscription pricing.
             </p>
         </div>
       </section>
