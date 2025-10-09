@@ -91,7 +91,7 @@ export function CartPanel() {
                 <span className="text-accent">${total.toFixed(2)}</span>
               </div>
               <Button className="w-full" size="lg">
-                Checkout
+                Checkout Soon
               </Button>
             </div>
           )}
