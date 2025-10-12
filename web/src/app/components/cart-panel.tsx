@@ -438,7 +438,7 @@ export function CartPanel() {
                   Back
                 </Button>
               )}
-              {step === 1 && <Button className="flex-1" onClick={() => setStep(2)}>Next</Button>}
+              {step === 1 && <Button className="flex-1" onClick={() => setStep(2)}>Feature Coming Soon Please Contact Us</Button>}
               {step === 2 && (
                 <Button className="flex-1" onClick={() => setStep(3)} disabled={!detailsValid}>
                   Review Order
