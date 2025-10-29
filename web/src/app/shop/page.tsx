@@ -23,7 +23,7 @@ const products = [
   },
   {
     id: 3,
-    name: "18x Brownies",
+    name: "12x Brownies",
     price: 27,
     image: "/shopitemphotosoon.png",
     description:
@@ -31,8 +31,8 @@ const products = [
   },
   {
     id: 4,
-    name: "18x Rice Crispy Bars",
-    price: 30,
+    name: "9x Rice Crispy Bars",
+    price: 25,
     image: "/shopitemphotosoon.png",
     description:
       "Chewy, buttery marshmallow bars with the perfect crispy bite.",
@@ -69,14 +69,14 @@ const products = [
     description:
       "Golden-edge, soft-center cookies packed with semisweet chocolate chips.",
   },
-  {
-    id: 9,
-    name: "12x Blueberry Muffins",
-    price: 24,
-    image: "/shopitemphotosoon.png",
-    description:
-      "Bakery-style muffins bursting with juicy blueberries and a tender crumb.",
-  },
+//  {
+//    id: 9,
+//    name: "12x Blueberry Muffins",
+//    price: 24,
+//    image: "/shopitemphotosoon.png",
+//    description:
+//      "Bakery-style muffins bursting with juicy blueberries and a tender crumb.",
+ // },
 ] as const;
 
 export default function ShopPage() {
