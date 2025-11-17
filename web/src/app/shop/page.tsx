@@ -9,7 +9,7 @@ const products = [
     id: 1,
     name: "Loaf Banana Bread (8 slices)",
     price: 13,
-    image: "/shopitemphotosoon.png",
+    image: "/bananabread.png",
     description:
       "Moist, banana-rich loaf with a hint of vanilla—perfect toasted with butter.",
   },
@@ -17,7 +17,7 @@ const products = [
     id: 2,
     name: "Loaf Pumpkin Bread (8 slices)",
     price: 16,
-    image: "/shopitemphotosoon.png",
+    image: "/pumpkingbread.png",
     description:
       "Spiced pumpkin loaf with cinnamon and nutmeg for cozy, fall-forward flavor.",
   },
@@ -25,7 +25,7 @@ const products = [
     id: 3,
     name: "12x Brownies",
     price: 27,
-    image: "/shopitemphotosoon.png",
+    image: "/brownies.png",
     description:
       "Fudgy chocolate brownies with a crackly top—rich, dense, and crowd-pleasing.",
   },
@@ -33,7 +33,7 @@ const products = [
     id: 4,
     name: "9x Rice Crispy Bars",
     price: 25,
-    image: "/shopitemphotosoon.png",
+    image: "/ricecrispy.png",
     description:
       "Chewy, buttery marshmallow bars with the perfect crispy bite.",
   },
@@ -41,7 +41,7 @@ const products = [
     id: 5,
     name: "30x Vanilla Cake Pops",
     price: 60,
-    image: "/shopitemphotosoon.png",
+    image: "/vanillapops.png",
     description:
       "Classic vanilla cake dipped in smooth coating and finished with sprinkles.",
   },
@@ -49,7 +49,7 @@ const products = [
     id: 6,
     name: "30x Chocolate Cake Pops",
     price: 60,
-    image: "/shopitemphotosoon.png",
+    image: "/chocolatepops.png",
     description:
       "Decadent chocolate cake pops with a glossy chocolate shell.",
   },
@@ -57,7 +57,7 @@ const products = [
     id: 7,
     name: "12x White Chocolate Cranberry Oatmeal Cookies",
     price: 24,
-    image: "/shopitemphotosoon.png",
+    image: "/whitechocolatecranoatmealcookies.png",
     description:
       "Soft oatmeal cookies studded with tart cranberries and creamy white chocolate.",
   },
@@ -65,7 +65,7 @@ const products = [
     id: 8,
     name: "12x Chocolate Chip Cookies",
     price: 18,
-    image: "/shopitemphotosoon.png",
+    image: "/chocchipcookies.png",
     description:
       "Golden-edge, soft-center cookies packed with semisweet chocolate chips.",
   },
