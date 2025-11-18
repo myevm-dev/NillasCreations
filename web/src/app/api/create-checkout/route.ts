@@ -2,6 +2,54 @@
 import { NextResponse } from "next/server";
 import { SquareClient, SquareError } from "square";
 
+type DeliveryAddress = {
+  line1: string;
+  line2?: string;
+  city: string;
+  state: string;
+  zip: string;
+};
+
+function formatDeliveryNote(args: {
+  pickupDate?: string;
+  deliveryAddress?: DeliveryAddress | null;
+  pickupNotes?: string;
+}) {
+  const { pickupDate, deliveryAddress, pickupNotes } = args;
+
+  const lines: string[] = [];
+
+  if (pickupDate) {
+    lines.push(`Date: ${pickupDate}`);
+  }
+
+  if (deliveryAddress) {
+    const { line1, line2, city, state, zip } = deliveryAddress;
+    if (line1) {
+      lines.push(
+        `Address: ${line1}${line2 ? `, ${line2}` : ""}`
+      );
+    }
+    if (city || state || zip) {
+      lines.push(
+        `         ${city || ""}${city && (state || zip) ? ", " : ""}${
+          state || ""
+        } ${zip || ""}`.trimEnd()
+      );
+    }
+  }
+
+  if (pickupNotes) {
+    lines.push(`Notes: ${pickupNotes}`);
+  }
+
+  if (lines.length === 0) {
+    return "";
+  }
+
+  return ["DELIVERY DETAILS", ...lines].join("\n");
+}
+
 export async function POST(req: Request) {
   try {
     const {
@@ -39,7 +87,7 @@ export async function POST(req: Request) {
       },
     }));
 
-    // Build metadata only with fields that actually have values
+    // Metadata for API / future use
     const metadata: Record<string, string> = {
       source: "nillas-web",
     };
@@ -58,6 +106,13 @@ export async function POST(req: Request) {
 
     const client = new SquareClient({ token });
 
+    // Human readable note visible inside Square Orders
+    const orderNote = formatDeliveryNote({
+      pickupDate,
+      deliveryAddress,
+      pickupNotes,
+    });
+
     const resp = await client.checkout.paymentLinks.create({
       idempotencyKey: crypto.randomUUID(),
       order: {
@@ -65,6 +120,8 @@ export async function POST(req: Request) {
         lineItems,
         metadata,
         referenceId: `web-${Date.now()}`,
+        // This shows up clearly on the order in Dashboard
+        ...(orderNote ? { note: orderNote } : {}),
       },
       checkoutOptions: {
         redirectUrl: "https://www.nillascreations.com/order-confirmed",
