@@ -61,6 +61,30 @@ const products = [
     description:
       "Golden edge, soft center cookies packed with semisweet chocolate chips.",
   },
+  {
+    id: 8,
+    name: "TEST Chicka Cherry Pie ",
+    price: 1,
+    image: "/shopitemphotosoon.png",
+    description:
+      "Nothing Here :).",
+  },
+  {
+    id: 9,
+    name: "TEST Flavored Water ",
+    price: 1,
+    image: "/shopitemphotosoon.png",
+    description:
+      "Nothing Here :).",
+  },
+  {
+    id: 10,
+    name: "TEST Bologna Sammy ",
+    price: 1,
+    image: "/shopitemphotosoon.png",
+    description:
+      "Nothing Here :).",
+  },
 
   // {
   //   id: 9,

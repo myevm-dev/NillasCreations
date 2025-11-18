@@ -4,7 +4,12 @@ import { SquareClient, Square, SquareError } from "square";
 
 export async function POST(req: Request) {
   try {
-    const { cart, pickupDate, pickupNotes } = await req.json();
+    const {
+      cart,
+      pickupDate,
+      pickupNotes,
+      deliveryAddress,
+    } = await req.json();
 
     if (!Array.isArray(cart) || cart.length === 0) {
       return NextResponse.json({ error: "Cart cannot be empty" }, { status: 400 });
@@ -19,7 +24,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // dollars -> cents -> BigInt for Square amounts
     const toCents = (n: number) => BigInt(Math.round(n * 100));
 
     const lineItems: Square.OrderLineItem[] = cart.map((item: any) => ({
@@ -33,23 +37,40 @@ export async function POST(req: Request) {
 
     const client = new SquareClient({ token });
 
-    // Build a checkout link for THIS cart (multi-item supported)
+    // build a readable note that shows up on the order in Square
+    const noteParts: string[] = [];
+    if (pickupDate) noteParts.push(`Delivery date: ${pickupDate}`);
+    if (deliveryAddress?.line1) {
+      const addr = `${deliveryAddress.line1}${
+        deliveryAddress.line2 ? " " + deliveryAddress.line2 : ""
+      }, ${deliveryAddress.city ?? ""} ${deliveryAddress.state ?? ""} ${
+        deliveryAddress.zip ?? ""
+      }`;
+      noteParts.push(`Address: ${addr}`);
+    }
+    if (pickupNotes) noteParts.push(`Notes: ${pickupNotes}`);
+    const combinedNote = noteParts.join(" | ");
+
     const resp = await client.checkout.paymentLinks.create({
       idempotencyKey: crypto.randomUUID(),
       order: {
         locationId,
         lineItems,
-        // Use metadata to carry your fulfillment info (shows in Dashboard)
         metadata: {
           pickupDate: pickupDate ?? "",
           pickupNotes: pickupNotes ?? "",
+          addressLine1: deliveryAddress?.line1 ?? "",
+          addressLine2: deliveryAddress?.line2 ?? "",
+          addressCity: deliveryAddress?.city ?? "",
+          addressState: deliveryAddress?.state ?? "",
+          addressZip: deliveryAddress?.zip ?? "",
           source: "nillas-web",
         },
-        // Optionally attach a reference for your own records
+        note: combinedNote || "Online order from nillascreations.com",
         referenceId: `web-${Date.now()}`,
       },
       checkoutOptions: {
-        redirectUrl: "https://nillascreations.com/order-confirmed",
+        redirectUrl: "https://www.nillascreations.com/order-confirmed",
       },
     });
 
@@ -60,7 +81,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ checkoutUrl: url });
   } catch (err) {
-    // TypeScript: err is unknown, cast for instanceof
     if (err instanceof SquareError) {
       return NextResponse.json(
         { error: err.message, details: err.body ?? null },

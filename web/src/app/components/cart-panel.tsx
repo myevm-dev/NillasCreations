@@ -52,33 +52,6 @@ function computeDefaultDelivery(now = new Date()) {
   return { date, time };
 }
 
-async function placeOrder(orderPayload: any) {
-  const res = await fetch("/api/orders", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(orderPayload),
-  });
-  const data = await res.json();
-  if (!data.ok) throw new Error(data.error || "Order failed");
-  return data as { ok: true; orderNumber: string; receiptHTML: string; filename: string };
-}
-
-async function placeOrderAndDownload(orderPayload: any) {
-  const data = await placeOrder(orderPayload);
-
-  const blob = new Blob([data.receiptHTML], { type: "text/html;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = data.filename || "receipt.html";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-
-  return data.orderNumber;
-}
-
 export function CartPanel() {
   const { items, removeItem, updateQuantity, total, isOpen, setIsOpen } = useCart();
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -99,9 +72,8 @@ export function CartPanel() {
   // which dropdown is open on step 2
   const [detailsSection, setDetailsSection] = useState<"contact" | "delivery">("contact");
 
-  // Step 3 choices
-  const [wantsDownload, setWantsDownload] = useState(true);
-  const [wantsEmailReceipt, setWantsEmailReceipt] = useState(false);
+  // Step 3 online payment loading state
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const MIN_TIME_GENERAL = "09:00";
   const MAX_TIME = "21:00";
@@ -129,22 +101,44 @@ export function CartPanel() {
         details.address.state.trim() &&
         details.address.zip.trim()));
 
-  const buildPayload = () => ({
-    customer: {
-      name: details.name,
-      phone: details.phone,
-      email: details.email?.trim() || undefined,
-      isCell: details.isCell,
-    },
-    items: items.map((i) => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })),
-    fulfillment:
-      details.fulfillMethod === "delivery"
-        ? { type: "delivery", date: details.date, time: details.time, address: details.address }
-        : { type: "pickup", date: details.date, time: details.time },
-    notes: details.notes,
-    payment: { method: "COD", paid: false },
-    sendCustomerCopy: Boolean(wantsEmailReceipt && details.email && details.email.includes("@")),
-  });
+  // helper to send cart and details to your Square checkout api
+  const startSquareCheckout = async () => {
+    try {
+      setIsProcessing(true);
+
+      // inside CartPanel, in startSquareCheckout()
+      const res = await fetch("/api/create-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cart: items.map((i) => ({
+            name: i.name,
+            price: i.price,
+            quantity: i.quantity,
+          })),
+          pickupDate: details.date,
+          pickupNotes: details.notes,
+          deliveryAddress: details.address,
+          customerName: details.name,
+          customerPhone: details.phone,
+          customerEmail: details.email,
+        }),
+      });
+
+
+      const data = await res.json();
+
+      if (!res.ok || !data.checkoutUrl) {
+        throw new Error(data.error || "Failed to create checkout link");
+      }
+
+      // redirect customer to the Square hosted checkout page
+      window.location.href = data.checkoutUrl as string;
+    } catch (err: any) {
+      alert(err?.message ?? "Failed to start online checkout.");
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <>
@@ -158,8 +152,8 @@ export function CartPanel() {
           <div className="flex items-center justify-between p-6 border-b border-border">
             <h2 className="text-2xl font-serif font-bold text-card-foreground">
               {step === 1 && "Your Cart"}
-              {step === 2 && "Your Details"}
-              {step === 3 && "Confirm Order"}
+              {step === 2 && "Enter Details"}
+              {step === 3 && "Review and Pay"}
             </h2>
             <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} aria-label="Close">
               <X className="h-5 w-5" />
@@ -170,7 +164,7 @@ export function CartPanel() {
           <div className="flex justify-between px-6 py-2 text-sm font-medium text-muted-foreground border-b border-border">
             <span className={step === 1 ? "text-primary font-semibold" : ""}>Step 1: Cart</span>
             <span className={step === 2 ? "text-primary font-semibold" : ""}>Step 2: Details</span>
-            <span className={step === 3 ? "text-primary font-semibold" : ""}>Step 3: Confirm</span>
+            <span className={step === 3 ? "text-primary font-semibold" : ""}>Step 3: Pay</span>
           </div>
 
           {/* Body */}
@@ -432,9 +426,9 @@ export function CartPanel() {
             {step === 3 && (
               <div className="space-y-4">
                 <div className="rounded-lg bg-background p-4">
-                  <p className="text-lg font-medium text-card-foreground">Cash on Delivery 💵</p>
+                  <p className="text-lg font-medium text-card-foreground">Secure online payment</p>
                   <p className="text-muted-foreground">
-                    We will confirm by text and collect payment on delivery or pickup.
+                    Review your details, then pay with card through our Square checkout page.
                   </p>
                 </div>
 
@@ -458,32 +452,6 @@ export function CartPanel() {
                   )}
                   <p className="font-semibold mt-2">Total: ${total.toFixed(2)}</p>
                 </div>
-
-                <div className="rounded-lg border border-border p-4 space-y-3">
-                  <p className="font-medium">Receipt</p>
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 accent-primary"
-                      checked={wantsDownload}
-                      onChange={(e) => setWantsDownload(e.target.checked)}
-                    />
-                    Download receipt after placing order
-                  </label>
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 accent-primary"
-                      checked={wantsEmailReceipt}
-                      onChange={(e) => setWantsEmailReceipt(e.target.checked)}
-                      disabled={!details.email || !details.email.includes("@")}
-                    />
-                    Email me a copy{" "}
-                    {(!details.email || !details.email.includes("@")) && (
-                      <span className="text-muted-foreground">(enter a valid email above)</span>
-                    )}
-                  </label>
-                </div>
               </div>
             )}
           </div>
@@ -496,6 +464,7 @@ export function CartPanel() {
                   variant="outline"
                   className="flex-1"
                   onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)}
+                  disabled={isProcessing}
                 >
                   Back
                 </Button>
@@ -506,30 +475,21 @@ export function CartPanel() {
                 </Button>
               )}
               {step === 2 && (
-                <Button className="flex-1" onClick={() => setStep(3)} disabled={!detailsValid}>
+                <Button
+                  className="flex-1"
+                  onClick={() => setStep(3)}
+                  disabled={!detailsValid}
+                >
                   Review Order
                 </Button>
               )}
               {step === 3 && (
                 <Button
                   className="flex-1 bg-green-600 hover:bg-green-700"
-                  onClick={async () => {
-                    try {
-                      const payload = buildPayload();
-                      if (wantsDownload) {
-                        await placeOrderAndDownload(payload);
-                      } else {
-                        await placeOrder(payload);
-                      }
-                      alert("Order placed! Cash on delivery confirmed.");
-                      setIsOpen(false);
-                      setStep(1);
-                    } catch (err: any) {
-                      alert(err?.message ?? "Failed to place order.");
-                    }
-                  }}
+                  disabled={isProcessing}
+                  onClick={startSquareCheckout}
                 >
-                  Confirm Order
+                  {isProcessing ? "Starting checkout..." : "Pay Online"}
                 </Button>
               )}
             </div>
