@@ -11,7 +11,7 @@ const products = [
     price: 13,
     image: "/bananabread.png",
     description:
-      "Moist, banana-rich loaf with a hint of vanilla—perfect toasted with butter.",
+      "Moist, banana rich loaf with a hint of vanilla, perfect toasted with butter.",
   },
   {
     id: 2,
@@ -19,7 +19,7 @@ const products = [
     price: 16,
     image: "/pumpkingbread.png",
     description:
-      "Spiced pumpkin loaf with cinnamon and nutmeg for cozy, fall-forward flavor.",
+      "Spiced pumpkin loaf with cinnamon and nutmeg for cozy fall forward flavor.",
   },
   {
     id: 3,
@@ -27,7 +27,7 @@ const products = [
     price: 27,
     image: "/brownies.png",
     description:
-      "Fudgy chocolate brownies with a crackly top—rich, dense, and crowd-pleasing.",
+      "Fudgy chocolate brownies with a crackly top, rich, dense, and crowd pleasing.",
   },
   {
     id: 4,
@@ -39,22 +39,14 @@ const products = [
   },
   {
     id: 5,
-    name: "30x Vanilla Cake Pops",
+    name: "12x Apple Cider Donuts",
     price: 60,
-    image: "/vanillapops.png",
+    image: "/shopitemphotosoon.png",
     description:
-      "Classic vanilla cake dipped in smooth coating and finished with sprinkles.",
+      "Tender apple cider donuts with cozy fall flavor in every bite.",
   },
   {
     id: 6,
-    name: "30x Chocolate Cake Pops",
-    price: 60,
-    image: "/chocolatepops.png",
-    description:
-      "Decadent chocolate cake pops with a glossy chocolate shell.",
-  },
-  {
-    id: 7,
     name: "12x White Chocolate Cranberry Oatmeal Cookies",
     price: 24,
     image: "/whitechocolatecranoatmealcookies.png",
@@ -62,21 +54,22 @@ const products = [
       "Soft oatmeal cookies studded with tart cranberries and creamy white chocolate.",
   },
   {
-    id: 8,
+    id: 7,
     name: "12x Chocolate Chip Cookies",
     price: 18,
     image: "/chocchipcookies.png",
     description:
-      "Golden-edge, soft-center cookies packed with semisweet chocolate chips.",
+      "Golden edge, soft center cookies packed with semisweet chocolate chips.",
   },
-//  {
-//    id: 9,
-//    name: "12x Blueberry Muffins",
-//    price: 24,
-//    image: "/shopitemphotosoon.png",
-//    description:
-//      "Bakery-style muffins bursting with juicy blueberries and a tender crumb.",
- // },
+
+  // {
+  //   id: 9,
+  //   name: "12x Blueberry Muffins",
+  //   price: 24,
+  //   image: "/shopitemphotosoon.png",
+  //   description:
+  //     "Bakery style muffins bursting with juicy blueberries and a tender crumb.",
+  // },
 ] as const;
 
 export default function ShopPage() {

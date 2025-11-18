@@ -3,7 +3,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { X, Minus, Plus, Trash2 } from "lucide-react";
+import { X, Minus, Plus, Trash2, ChevronDown } from "lucide-react";
 import { Button } from "./ui/button";
 import { useCart } from "./cart-provider";
 import { useRouter } from "next/navigation";
@@ -19,7 +19,7 @@ export type CartItem = {
 type Details = {
   name: string;
   phone: string;
-  email?: string;                 // NEW: optional email for receipt
+  email?: string;
   isCell: boolean;
   notes: string;
   fulfillMethod: "pickup" | "delivery";
@@ -34,9 +34,9 @@ type Details = {
   };
 };
 
-/** Compute default + earliest allowed delivery slot:
- *  - Start at now + 48h
- *  - If outside 09:00–21:00, set to next day 10:00
+/** Compute default plus earliest allowed delivery slot:
+ *  - Start at now plus 48h
+ *  - If outside 09:00 to 21:00, set to next day 10:00
  */
 function computeDefaultDelivery(now = new Date()) {
   const t = new Date(now.getTime() + 48 * 60 * 60 * 1000);
@@ -66,7 +66,6 @@ async function placeOrder(orderPayload: any) {
 async function placeOrderAndDownload(orderPayload: any) {
   const data = await placeOrder(orderPayload);
 
-  // Download HTML receipt (PDF later if you want)
   const blob = new Blob([data.receiptHTML], { type: "text/html;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -88,7 +87,7 @@ export function CartPanel() {
   const [details, setDetails] = useState<Details>({
     name: "",
     phone: "",
-    email: "",                   // NEW: start empty
+    email: "",
     isCell: true,
     notes: "",
     fulfillMethod: "delivery",
@@ -96,6 +95,9 @@ export function CartPanel() {
     time: earliest.time,
     address: { line1: "", line2: "", city: "", state: "", zip: "" },
   });
+
+  // which dropdown is open on step 2
+  const [detailsSection, setDetailsSection] = useState<"contact" | "delivery">("contact");
 
   // Step 3 choices
   const [wantsDownload, setWantsDownload] = useState(true);
@@ -127,7 +129,6 @@ export function CartPanel() {
         details.address.state.trim() &&
         details.address.zip.trim()));
 
-  // Build the payload we POST
   const buildPayload = () => ({
     customer: {
       name: details.name,
@@ -142,13 +143,15 @@ export function CartPanel() {
         : { type: "pickup", date: details.date, time: details.time },
     notes: details.notes,
     payment: { method: "COD", paid: false },
-    // The API route should read this and email the customer copy if true:
     sendCustomerCopy: Boolean(wantsEmailReceipt && details.email && details.email.includes("@")),
   });
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 z-50 animate-in fade-in" onClick={() => setIsOpen(false)} />
+      <div
+        className="fixed inset-0 bg-black/50 z-50 animate-in fade-in"
+        onClick={() => setIsOpen(false)}
+      />
       <div className="fixed right-0 top-0 h-full w-full max-w-md bg-card z-50 shadow-2xl animate-in slide-in-from-right">
         <div className="flex flex-col h-full">
           {/* Header */}
@@ -202,7 +205,9 @@ export function CartPanel() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="font-medium text-card-foreground truncate">{item.name}</h3>
-                          <p className="text-sm text-accent font-semibold mt-1">${item.price.toFixed(2)}</p>
+                          <p className="text-sm text-accent font-semibold mt-1">
+                            ${item.price.toFixed(2)}
+                          </p>
                           <div className="flex items-center gap-2 mt-2">
                             <Button
                               variant="outline"
@@ -243,7 +248,7 @@ export function CartPanel() {
             {/* STEP 2 */}
             {step === 2 && (
               <div className="space-y-4">
-                {/* Fulfillment */}
+                {/* Fulfillment (delivery only for now) */}
                 <div className="flex gap-2">
                   <Button
                     type="button"
@@ -264,109 +269,162 @@ export function CartPanel() {
                   </Button>
                 </div>
 
-                {/* Inputs */}
-                <input
-                  className="w-full rounded-md border px-3 py-2 bg-background"
-                  placeholder="Your name"
-                  value={details.name}
-                  onChange={(e) => setDetails({ ...details, name: e.target.value })}
-                />
-                <input
-                  className="w-full rounded-md border px-3 py-2 bg-background"
-                  placeholder="Phone"
-                  value={details.phone}
-                  onChange={(e) => setDetails({ ...details, phone: e.target.value })}
-                />
-                <input
-                  className="w-full rounded-md border px-3 py-2 bg-background"
-                  placeholder="Email (optional, to receive a receipt)"
-                  type="email"
-                  value={details.email || ""}
-                  onChange={(e) => setDetails({ ...details, email: e.target.value })}
-                />
-                <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <input
-                    type="checkbox"
-                    checked={details.isCell}
-                    onChange={(e) => setDetails({ ...details, isCell: e.target.checked })}
-                    className="h-4 w-4 accent-primary"
-                  />
-                  Cell phone (checked if we can text updates)
-                </label>
-
-                {/* Date & Time */}
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="date"
-                    min={earliest.date}
-                    value={details.date}
-                    onChange={(e) => setDetails({ ...details, date: e.target.value })}
-                    className="rounded-md border px-3 py-2 bg-background"
-                  />
-                  <input
-                    type="time"
-                    min={minTimeForSelectedDate}
-                    max={MAX_TIME}
-                    value={details.time}
-                    onChange={(e) => setDetails({ ...details, time: e.target.value })}
-                    className="rounded-md border px-3 py-2 bg-background"
-                  />
-                </div>
-
-                {/* Address */}
+                {/* Accordion sections */}
                 <div className="space-y-3">
-                  <input
-                    className="w-full rounded-md border px-3 py-2 bg-background"
-                    placeholder="Street address"
-                    value={details.address.line1}
-                    onChange={(e) =>
-                      setDetails({ ...details, address: { ...details.address, line1: e.target.value } })
-                    }
-                  />
-                  <input
-                    className="w-full rounded-md border px-3 py-2 bg-background"
-                    placeholder="Apt / Suite (optional)"
-                    value={details.address.line2}
-                    onChange={(e) =>
-                      setDetails({ ...details, address: { ...details.address, line2: e.target.value } })
-                    }
-                  />
-                  <div className="grid grid-cols-3 gap-3">
-                    <input
-                      className="rounded-md border px-3 py-2 bg-background"
-                      placeholder="City"
-                      value={details.address.city}
-                      onChange={(e) =>
-                        setDetails({ ...details, address: { ...details.address, city: e.target.value } })
-                      }
+                  {/* Contact section header */}
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between rounded-md border-2 border-neutral-500 border-border px-3 py-2 bg-background"
+                    onClick={() => setDetailsSection("contact")}
+                  >
+                    <span className="font-medium">Contact information</span>
+                    <ChevronDown
+                      className={`h-4 w-4 transition-transform ${
+                        detailsSection === "contact" ? "rotate-180" : ""
+                      }`}
                     />
-                    <input
-                      className="rounded-md border px-3 py-2 bg-background"
-                      placeholder="State"
-                      value={details.address.state}
-                      onChange={(e) =>
-                        setDetails({ ...details, address: { ...details.address, state: e.target.value } })
-                      }
-                    />
-                    <input
-                      className="rounded-md border px-3 py-2 bg-background"
-                      placeholder="ZIP"
-                      value={details.address.zip}
-                      onChange={(e) =>
-                        setDetails({ ...details, address: { ...details.address, zip: e.target.value } })
-                      }
-                    />
-                  </div>
-                </div>
+                  </button>
 
-                {/* Notes */}
-                <textarea
-                  className="w-full rounded-md border px-3 py-2 bg-background"
-                  placeholder="Notes (flavors, allergies, delivery instructions, etc.)"
-                  rows={3}
-                  value={details.notes}
-                  onChange={(e) => setDetails({ ...details, notes: e.target.value })}
-                />
+                  {detailsSection === "contact" && (
+                    <div className="mt-2 space-y-3">
+                      <input
+                        className="w-full rounded-md border px-3 py-2 bg-background"
+                        placeholder="Your name"
+                        value={details.name}
+                        onChange={(e) => setDetails({ ...details, name: e.target.value })}
+                      />
+                      <input
+                        className="w-full rounded-md border px-3 py-2 bg-background"
+                        placeholder="Phone"
+                        value={details.phone}
+                        onChange={(e) => setDetails({ ...details, phone: e.target.value })}
+                      />
+                      <input
+                        className="w-full rounded-md border px-3 py-2 bg-background"
+                        placeholder="Email (optional, to receive a receipt)"
+                        type="email"
+                        value={details.email || ""}
+                        onChange={(e) => setDetails({ ...details, email: e.target.value })}
+                      />
+                      <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <input
+                          type="checkbox"
+                          checked={details.isCell}
+                          onChange={(e) => setDetails({ ...details, isCell: e.target.checked })}
+                          className="h-4 w-4 accent-primary"
+                        />
+                        Cell phone (checked if we can text updates)
+                      </label>
+                    </div>
+                  )}
+
+                  {/* Delivery section header */}
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between rounded-md border-2 border-neutral-500 border-border px-3 py-2 bg-background mt-4"
+                    onClick={() => setDetailsSection("delivery")}
+                  >
+                    <span className="font-medium">Delivery details</span>
+                    <ChevronDown
+                      className={`h-4 w-4 transition-transform ${
+                        detailsSection === "delivery" ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {detailsSection === "delivery" && (
+                    <div className="mt-2 space-y-3">
+                      {/* Date and time */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <input
+                          type="date"
+                          min={earliest.date}
+                          value={details.date}
+                          onChange={(e) => setDetails({ ...details, date: e.target.value })}
+                          className="rounded-md border px-3 py-2 bg-background"
+                        />
+                        <input
+                          type="time"
+                          min={minTimeForSelectedDate}
+                          max={MAX_TIME}
+                          value={details.time}
+                          onChange={(e) => setDetails({ ...details, time: e.target.value })}
+                          className="rounded-md border px-3 py-2 bg-background"
+                        />
+                      </div>
+
+                      {/* Address */}
+                      <div className="space-y-3">
+                        <input
+                          className="w-full rounded-md border px-3 py-2 bg-background"
+                          placeholder="Street address"
+                          value={details.address.line1}
+                          onChange={(e) =>
+                            setDetails({
+                              ...details,
+                              address: { ...details.address, line1: e.target.value },
+                            })
+                          }
+                        />
+                        <input
+                          className="w-full rounded-md border px-3 py-2 bg-background"
+                          placeholder="Apt / Suite (optional)"
+                          value={details.address.line2}
+                          onChange={(e) =>
+                            setDetails({
+                              ...details,
+                              address: { ...details.address, line2: e.target.value },
+                            })
+                          }
+                        />
+                        <div className="grid grid-cols-3 gap-3">
+                          <input
+                            className="rounded-md border px-3 py-2 bg-background"
+                            placeholder="City"
+                            value={details.address.city}
+                            onChange={(e) =>
+                              setDetails({
+                                ...details,
+                                address: { ...details.address, city: e.target.value },
+                              })
+                            }
+                          />
+                          <input
+                            className="rounded-md border px-3 py-2 bg-background"
+                            placeholder="State"
+                            value={details.address.state}
+                            onChange={(e) =>
+                              setDetails({
+                                ...details,
+                                address: { ...details.address, state: e.target.value },
+                              })
+                            }
+                          />
+                          <input
+                            className="rounded-md border px-3 py-2 bg-background"
+                            placeholder="ZIP"
+                            value={details.address.zip}
+                            onChange={(e) =>
+                              setDetails({
+                                ...details,
+                                address: { ...details.address, zip: e.target.value },
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      {/* Notes */}
+                      <textarea
+                        className="w-full rounded-md border px-3 py-2 bg-background"
+                        placeholder="Notes (flavors, allergies, delivery instructions, etc.)"
+                        rows={3}
+                        value={details.notes}
+                        onChange={(e) => setDetails({ ...details, notes: e.target.value })}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -376,7 +434,7 @@ export function CartPanel() {
                 <div className="rounded-lg bg-background p-4">
                   <p className="text-lg font-medium text-card-foreground">Cash on Delivery 💵</p>
                   <p className="text-muted-foreground">
-                    We’ll confirm by text and collect payment on delivery/pickup.
+                    We will confirm by text and collect payment on delivery or pickup.
                   </p>
                 </div>
 
@@ -401,7 +459,6 @@ export function CartPanel() {
                   <p className="font-semibold mt-2">Total: ${total.toFixed(2)}</p>
                 </div>
 
-                {/* Receipt options */}
                 <div className="rounded-lg border border-border p-4 space-y-3">
                   <p className="font-medium">Receipt</p>
                   <label className="flex items-center gap-2 text-sm">
@@ -421,7 +478,8 @@ export function CartPanel() {
                       onChange={(e) => setWantsEmailReceipt(e.target.checked)}
                       disabled={!details.email || !details.email.includes("@")}
                     />
-                    Email me a copy {(!details.email || !details.email.includes("@")) && (
+                    Email me a copy{" "}
+                    {(!details.email || !details.email.includes("@")) && (
                       <span className="text-muted-foreground">(enter a valid email above)</span>
                     )}
                   </label>
@@ -434,11 +492,19 @@ export function CartPanel() {
           {items.length > 0 && (
             <div className="border-t border-border p-6 flex gap-3">
               {step > 1 && (
-                <Button variant="outline" className="flex-1" onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)}>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)}
+                >
                   Back
                 </Button>
               )}
-              {step === 1 && <Button className="flex-1" onClick={() => setStep(2)}>Feature Coming Soon Please Contact Us</Button>}
+              {step === 1 && (
+                <Button className="flex-1" onClick={() => setStep(2)}>
+                  Next: Enter Your Details
+                </Button>
+              )}
               {step === 2 && (
                 <Button className="flex-1" onClick={() => setStep(3)} disabled={!detailsValid}>
                   Review Order
@@ -455,7 +521,6 @@ export function CartPanel() {
                       } else {
                         await placeOrder(payload);
                       }
-                      // Success UX — you can replace with toast
                       alert("Order placed! Cash on delivery confirmed.");
                       setIsOpen(false);
                       setStep(1);
