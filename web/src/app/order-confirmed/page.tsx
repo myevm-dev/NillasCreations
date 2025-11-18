@@ -4,6 +4,8 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Lottie from "lottie-react";
+import mixingAnimation from "@/app/components/lottie/mixinglottie.json";
 
 export default function OrderConfirmedPage() {
   const searchParams = useSearchParams();
@@ -13,9 +15,20 @@ export default function OrderConfirmedPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="max-w-md w-full bg-card border border-border rounded-2xl p-8 text-center shadow-lg">
+
+        {/* Lottie animation */}
+        <div className="w-full flex justify-center mb-6">
+          <Lottie 
+            animationData={mixingAnimation} 
+            loop={true}
+            className="w-48 h-48"
+          />
+        </div>
+
         <h1 className="text-3xl font-serif font-bold mb-4 text-card-foreground">
           Thank you for your order!
         </h1>
+
         <p className="text-muted-foreground mb-4">
           Your payment was processed securely through Square.
           We will send a text or email with your order details and pickup or delivery time.
@@ -26,6 +39,7 @@ export default function OrderConfirmedPage() {
             Transaction ID: <span className="font-mono">{transactionId}</span>
           </p>
         )}
+
         {orderId && (
           <p className="text-xs text-muted-foreground mb-4">
             Order ID: <span className="font-mono">{orderId}</span>

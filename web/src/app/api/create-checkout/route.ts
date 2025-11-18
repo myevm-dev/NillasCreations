@@ -1,6 +1,6 @@
 // /workspaces/NillasCreations/web/src/app/api/create-checkout/route.ts
 import { NextResponse } from "next/server";
-import { SquareClient, Square, SquareError } from "square";
+import { SquareClient, SquareError } from "square";
 
 export async function POST(req: Request) {
   try {
@@ -9,6 +9,9 @@ export async function POST(req: Request) {
       pickupDate,
       pickupNotes,
       deliveryAddress,
+      customerName,
+      customerPhone,
+      customerEmail,
     } = await req.json();
 
     if (!Array.isArray(cart) || cart.length === 0) {
@@ -17,6 +20,7 @@ export async function POST(req: Request) {
 
     const locationId = process.env.SQUARE_LOCATION_ID;
     const token = process.env.SQUARE_ACCESS_TOKEN;
+
     if (!token || !locationId) {
       return NextResponse.json(
         { error: "Missing SQUARE_ACCESS_TOKEN or SQUARE_LOCATION_ID in .env" },
@@ -26,47 +30,40 @@ export async function POST(req: Request) {
 
     const toCents = (n: number) => BigInt(Math.round(n * 100));
 
-    const lineItems: Square.OrderLineItem[] = cart.map((item: any) => ({
+    const lineItems = cart.map((item: any) => ({
       name: String(item.name),
       quantity: String(item.quantity ?? 1),
       basePriceMoney: {
         amount: toCents(Number(item.price)),
-        currency: "USD",
+        currency: "USD" as const,
       },
     }));
 
-    const client = new SquareClient({ token });
+    // Build metadata only with fields that actually have values
+    const metadata: Record<string, string> = {
+      source: "nillas-web",
+    };
 
-    // build a readable note that shows up on the order in Square
-    const noteParts: string[] = [];
-    if (pickupDate) noteParts.push(`Delivery date: ${pickupDate}`);
-    if (deliveryAddress?.line1) {
-      const addr = `${deliveryAddress.line1}${
-        deliveryAddress.line2 ? " " + deliveryAddress.line2 : ""
-      }, ${deliveryAddress.city ?? ""} ${deliveryAddress.state ?? ""} ${
-        deliveryAddress.zip ?? ""
-      }`;
-      noteParts.push(`Address: ${addr}`);
-    }
-    if (pickupNotes) noteParts.push(`Notes: ${pickupNotes}`);
-    const combinedNote = noteParts.join(" | ");
+    if (pickupDate) metadata.pickupDate = pickupDate;
+    if (pickupNotes) metadata.pickupNotes = pickupNotes;
+    if (customerName) metadata.customerName = customerName;
+    if (customerPhone) metadata.customerPhone = customerPhone;
+    if (customerEmail) metadata.customerEmail = customerEmail;
+
+    if (deliveryAddress?.line1) metadata.addressLine1 = deliveryAddress.line1;
+    if (deliveryAddress?.line2) metadata.addressLine2 = deliveryAddress.line2;
+    if (deliveryAddress?.city) metadata.addressCity = deliveryAddress.city;
+    if (deliveryAddress?.state) metadata.addressState = deliveryAddress.state;
+    if (deliveryAddress?.zip) metadata.addressZip = deliveryAddress.zip;
+
+    const client = new SquareClient({ token });
 
     const resp = await client.checkout.paymentLinks.create({
       idempotencyKey: crypto.randomUUID(),
       order: {
         locationId,
         lineItems,
-        metadata: {
-          pickupDate: pickupDate ?? "",
-          pickupNotes: pickupNotes ?? "",
-          addressLine1: deliveryAddress?.line1 ?? "",
-          addressLine2: deliveryAddress?.line2 ?? "",
-          addressCity: deliveryAddress?.city ?? "",
-          addressState: deliveryAddress?.state ?? "",
-          addressZip: deliveryAddress?.zip ?? "",
-          source: "nillas-web",
-        },
-        note: combinedNote || "Online order from nillascreations.com",
+        metadata,
         referenceId: `web-${Date.now()}`,
       },
       checkoutOptions: {
@@ -87,6 +84,8 @@ export async function POST(req: Request) {
         { status: err.statusCode ?? 500 }
       );
     }
+
+    console.error("create-checkout error", err);
     return NextResponse.json({ error: "Failed to create checkout" }, { status: 500 });
   }
 }

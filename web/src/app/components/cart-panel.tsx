@@ -3,7 +3,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { X, Minus, Plus, Trash2, ChevronDown } from "lucide-react";
+import { X, Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useCart } from "./cart-provider";
 import { useRouter } from "next/navigation";
@@ -17,10 +17,6 @@ export type CartItem = {
 };
 
 type Details = {
-  name: string;
-  phone: string;
-  email?: string;
-  isCell: boolean;
   notes: string;
   fulfillMethod: "pickup" | "delivery";
   date: string;
@@ -58,10 +54,6 @@ export function CartPanel() {
   const router = useRouter();
   const earliest = useMemo(() => computeDefaultDelivery(), []);
   const [details, setDetails] = useState<Details>({
-    name: "",
-    phone: "",
-    email: "",
-    isCell: true,
     notes: "",
     fulfillMethod: "delivery",
     date: earliest.date,
@@ -69,15 +61,12 @@ export function CartPanel() {
     address: { line1: "", line2: "", city: "", state: "", zip: "" },
   });
 
-  // which dropdown is open on step 2
-  const [detailsSection, setDetailsSection] = useState<"contact" | "delivery">("contact");
-
-  // Step 3 online payment loading state
   const [isProcessing, setIsProcessing] = useState(false);
 
   const MIN_TIME_GENERAL = "09:00";
   const MAX_TIME = "21:00";
-  const minTimeForSelectedDate = details.date === earliest.date ? earliest.time : MIN_TIME_GENERAL;
+  const minTimeForSelectedDate =
+    details.date === earliest.date ? earliest.time : MIN_TIME_GENERAL;
 
   useEffect(() => {
     if (details.time < minTimeForSelectedDate) {
@@ -91,8 +80,6 @@ export function CartPanel() {
 
   const requiresAddress = details.fulfillMethod === "delivery";
   const detailsValid =
-    details.name.trim().length > 0 &&
-    details.phone.trim().length > 0 &&
     details.date &&
     details.time &&
     (!requiresAddress ||
@@ -101,12 +88,10 @@ export function CartPanel() {
         details.address.state.trim() &&
         details.address.zip.trim()));
 
-  // helper to send cart and details to your Square checkout api
   const startSquareCheckout = async () => {
     try {
       setIsProcessing(true);
 
-      // inside CartPanel, in startSquareCheckout()
       const res = await fetch("/api/create-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -119,12 +104,8 @@ export function CartPanel() {
           pickupDate: details.date,
           pickupNotes: details.notes,
           deliveryAddress: details.address,
-          customerName: details.name,
-          customerPhone: details.phone,
-          customerEmail: details.email,
         }),
       });
-
 
       const data = await res.json();
 
@@ -132,7 +113,6 @@ export function CartPanel() {
         throw new Error(data.error || "Failed to create checkout link");
       }
 
-      // redirect customer to the Square hosted checkout page
       window.location.href = data.checkoutUrl as string;
     } catch (err: any) {
       alert(err?.message ?? "Failed to start online checkout.");
@@ -152,19 +132,30 @@ export function CartPanel() {
           <div className="flex items-center justify-between p-6 border-b border-border">
             <h2 className="text-2xl font-serif font-bold text-card-foreground">
               {step === 1 && "Your Cart"}
-              {step === 2 && "Enter Details"}
+              {step === 2 && "Order Details"}
               {step === 3 && "Review and Pay"}
             </h2>
-            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} aria-label="Close">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsOpen(false)}
+              aria-label="Close"
+            >
               <X className="h-5 w-5" />
             </Button>
           </div>
 
           {/* Step Indicators */}
           <div className="flex justify-between px-6 py-2 text-sm font-medium text-muted-foreground border-b border-border">
-            <span className={step === 1 ? "text-primary font-semibold" : ""}>Step 1: Cart</span>
-            <span className={step === 2 ? "text-primary font-semibold" : ""}>Step 2: Details</span>
-            <span className={step === 3 ? "text-primary font-semibold" : ""}>Step 3: Pay</span>
+            <span className={step === 1 ? "text-primary font-semibold" : ""}>
+              Step 1: Cart
+            </span>
+            <span className={step === 2 ? "text-primary font-semibold" : ""}>
+              Step 2: Details
+            </span>
+            <span className={step === 3 ? "text-primary font-semibold" : ""}>
+              Step 3: Pay
+            </span>
           </div>
 
           {/* Body */}
@@ -188,7 +179,10 @@ export function CartPanel() {
                 ) : (
                   <div className="space-y-4">
                     {items.map((item) => (
-                      <div key={item.id} className="flex gap-4 p-4 bg-background rounded-lg">
+                      <div
+                        key={item.id}
+                        className="flex gap-4 p-4 bg-background rounded-lg"
+                      >
                         <div className="relative w-20 h-20 rounded-md overflow-hidden flex-shrink-0">
                           <Image
                             src={item.image || "/placeholder.svg"}
@@ -198,7 +192,9 @@ export function CartPanel() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-card-foreground truncate">{item.name}</h3>
+                          <h3 className="font-medium text-card-foreground truncate">
+                            {item.name}
+                          </h3>
                           <p className="text-sm text-accent font-semibold mt-1">
                             ${item.price.toFixed(2)}
                           </p>
@@ -207,7 +203,9 @@ export function CartPanel() {
                               variant="outline"
                               size="icon"
                               className="h-7 w-7 bg-transparent"
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              onClick={() =>
+                                updateQuantity(item.id, item.quantity - 1)
+                              }
                             >
                               <Minus className="h-3 w-3" />
                             </Button>
@@ -218,7 +216,9 @@ export function CartPanel() {
                               variant="outline"
                               size="icon"
                               className="h-7 w-7 bg-transparent"
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              onClick={() =>
+                                updateQuantity(item.id, item.quantity + 1)
+                              }
                             >
                               <Plus className="h-3 w-3" />
                             </Button>
@@ -257,167 +257,105 @@ export function CartPanel() {
                     type="button"
                     variant="default"
                     className="flex-1"
-                    onClick={() => setDetails((d) => ({ ...d, fulfillMethod: "delivery" }))}
+                    onClick={() =>
+                      setDetails((d) => ({ ...d, fulfillMethod: "delivery" }))
+                    }
                   >
                     Delivery
                   </Button>
                 </div>
 
-                {/* Accordion sections */}
+                {/* Delivery inputs */}
                 <div className="space-y-3">
-                  {/* Contact section header */}
-                  <button
-                    type="button"
-                    className="w-full flex items-center justify-between rounded-md border-2 border-neutral-500 border-border px-3 py-2 bg-background"
-                    onClick={() => setDetailsSection("contact")}
-                  >
-                    <span className="font-medium">Contact information</span>
-                    <ChevronDown
-                      className={`h-4 w-4 transition-transform ${
-                        detailsSection === "contact" ? "rotate-180" : ""
-                      }`}
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      type="date"
+                      min={earliest.date}
+                      value={details.date}
+                      onChange={(e) =>
+                        setDetails({ ...details, date: e.target.value })
+                      }
+                      className="rounded-md border px-3 py-2 bg-background"
                     />
-                  </button>
-
-                  {detailsSection === "contact" && (
-                    <div className="mt-2 space-y-3">
-                      <input
-                        className="w-full rounded-md border px-3 py-2 bg-background"
-                        placeholder="Your name"
-                        value={details.name}
-                        onChange={(e) => setDetails({ ...details, name: e.target.value })}
-                      />
-                      <input
-                        className="w-full rounded-md border px-3 py-2 bg-background"
-                        placeholder="Phone"
-                        value={details.phone}
-                        onChange={(e) => setDetails({ ...details, phone: e.target.value })}
-                      />
-                      <input
-                        className="w-full rounded-md border px-3 py-2 bg-background"
-                        placeholder="Email (optional, to receive a receipt)"
-                        type="email"
-                        value={details.email || ""}
-                        onChange={(e) => setDetails({ ...details, email: e.target.value })}
-                      />
-                      <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <input
-                          type="checkbox"
-                          checked={details.isCell}
-                          onChange={(e) => setDetails({ ...details, isCell: e.target.checked })}
-                          className="h-4 w-4 accent-primary"
-                        />
-                        Cell phone (checked if we can text updates)
-                      </label>
-                    </div>
-                  )}
-
-                  {/* Delivery section header */}
-                  <button
-                    type="button"
-                    className="w-full flex items-center justify-between rounded-md border-2 border-neutral-500 border-border px-3 py-2 bg-background mt-4"
-                    onClick={() => setDetailsSection("delivery")}
-                  >
-                    <span className="font-medium">Delivery details</span>
-                    <ChevronDown
-                      className={`h-4 w-4 transition-transform ${
-                        detailsSection === "delivery" ? "rotate-180" : ""
-                      }`}
+                    <input
+                      type="time"
+                      min={minTimeForSelectedDate}
+                      max={MAX_TIME}
+                      value={details.time}
+                      onChange={(e) =>
+                        setDetails({ ...details, time: e.target.value })
+                      }
+                      className="rounded-md border px-3 py-2 bg-background"
                     />
-                  </button>
+                  </div>
 
-                  {detailsSection === "delivery" && (
-                    <div className="mt-2 space-y-3">
-                      {/* Date and time */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <input
-                          type="date"
-                          min={earliest.date}
-                          value={details.date}
-                          onChange={(e) => setDetails({ ...details, date: e.target.value })}
-                          className="rounded-md border px-3 py-2 bg-background"
-                        />
-                        <input
-                          type="time"
-                          min={minTimeForSelectedDate}
-                          max={MAX_TIME}
-                          value={details.time}
-                          onChange={(e) => setDetails({ ...details, time: e.target.value })}
-                          className="rounded-md border px-3 py-2 bg-background"
-                        />
-                      </div>
+                  <input
+                    className="w-full rounded-md border px-3 py-2 bg-background"
+                    placeholder="Street address"
+                    value={details.address.line1}
+                    onChange={(e) =>
+                      setDetails({
+                        ...details,
+                        address: { ...details.address, line1: e.target.value },
+                      })
+                    }
+                  />
+                  <input
+                    className="w-full rounded-md border px-3 py-2 bg-background"
+                    placeholder="Apt / Suite (optional)"
+                    value={details.address.line2}
+                    onChange={(e) =>
+                      setDetails({
+                        ...details,
+                        address: { ...details.address, line2: e.target.value },
+                      })
+                    }
+                  />
+                  <div className="grid grid-cols-3 gap-3">
+                    <input
+                      className="rounded-md border px-3 py-2 bg-background"
+                      placeholder="City"
+                      value={details.address.city}
+                      onChange={(e) =>
+                        setDetails({
+                          ...details,
+                          address: { ...details.address, city: e.target.value },
+                        })
+                      }
+                    />
+                    <input
+                      className="rounded-md border px-3 py-2 bg-background"
+                      placeholder="State"
+                      value={details.address.state}
+                      onChange={(e) =>
+                        setDetails({
+                          ...details,
+                          address: { ...details.address, state: e.target.value },
+                        })
+                      }
+                    />
+                    <input
+                      className="rounded-md border px-3 py-2 bg-background"
+                      placeholder="ZIP"
+                      value={details.address.zip}
+                      onChange={(e) =>
+                        setDetails({
+                          ...details,
+                          address: { ...details.address, zip: e.target.value },
+                        })
+                      }
+                    />
+                  </div>
 
-                      {/* Address */}
-                      <div className="space-y-3">
-                        <input
-                          className="w-full rounded-md border px-3 py-2 bg-background"
-                          placeholder="Street address"
-                          value={details.address.line1}
-                          onChange={(e) =>
-                            setDetails({
-                              ...details,
-                              address: { ...details.address, line1: e.target.value },
-                            })
-                          }
-                        />
-                        <input
-                          className="w-full rounded-md border px-3 py-2 bg-background"
-                          placeholder="Apt / Suite (optional)"
-                          value={details.address.line2}
-                          onChange={(e) =>
-                            setDetails({
-                              ...details,
-                              address: { ...details.address, line2: e.target.value },
-                            })
-                          }
-                        />
-                        <div className="grid grid-cols-3 gap-3">
-                          <input
-                            className="rounded-md border px-3 py-2 bg-background"
-                            placeholder="City"
-                            value={details.address.city}
-                            onChange={(e) =>
-                              setDetails({
-                                ...details,
-                                address: { ...details.address, city: e.target.value },
-                              })
-                            }
-                          />
-                          <input
-                            className="rounded-md border px-3 py-2 bg-background"
-                            placeholder="State"
-                            value={details.address.state}
-                            onChange={(e) =>
-                              setDetails({
-                                ...details,
-                                address: { ...details.address, state: e.target.value },
-                              })
-                            }
-                          />
-                          <input
-                            className="rounded-md border px-3 py-2 bg-background"
-                            placeholder="ZIP"
-                            value={details.address.zip}
-                            onChange={(e) =>
-                              setDetails({
-                                ...details,
-                                address: { ...details.address, zip: e.target.value },
-                              })
-                            }
-                          />
-                        </div>
-                      </div>
-
-                      {/* Notes */}
-                      <textarea
-                        className="w-full rounded-md border px-3 py-2 bg-background"
-                        placeholder="Notes (flavors, allergies, delivery instructions, etc.)"
-                        rows={3}
-                        value={details.notes}
-                        onChange={(e) => setDetails({ ...details, notes: e.target.value })}
-                      />
-                    </div>
-                  )}
+                  <textarea
+                    className="w-full rounded-md border px-3 py-2 bg-background"
+                    placeholder="Notes (flavors, allergies, delivery instructions, etc.)"
+                    rows={3}
+                    value={details.notes}
+                    onChange={(e) =>
+                      setDetails({ ...details, notes: e.target.value })
+                    }
+                  />
                 </div>
               </div>
             )}
@@ -426,31 +364,34 @@ export function CartPanel() {
             {step === 3 && (
               <div className="space-y-4">
                 <div className="rounded-lg bg-background p-4">
-                  <p className="text-lg font-medium text-card-foreground">Secure online payment</p>
+                  <p className="text-lg font-medium text-card-foreground">
+                    Secure online payment
+                  </p>
                   <p className="text-muted-foreground">
-                    Review your details, then pay with card through our Square checkout page.
+                    Review your delivery details, then pay with card through our
+                    Square checkout page.
                   </p>
                 </div>
 
                 <div className="rounded-lg border border-border p-4 space-y-2">
-                  <p className="font-medium">Summary</p>
+                  <p className="font-medium">Delivery summary</p>
                   <p className="text-sm text-muted-foreground">
-                    {details.name || "Customer"} • {details.phone || "No phone"}{" "}
-                    {details.isCell ? "📱" : "☎️"}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Delivery • {details.date} {details.time}
+                    Delivery on {details.date} at {details.time}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {details.address.line1}
                     {details.address.line2 ? `, ${details.address.line2}` : ""}
-                    {details.address.city ? `, ${details.address.city}` : ""} {details.address.state}{" "}
-                    {details.address.zip}
+                    {details.address.city ? `, ${details.address.city}` : ""}{" "}
+                    {details.address.state} {details.address.zip}
                   </p>
                   {details.notes && (
-                    <p className="text-sm text-muted-foreground">Notes: {details.notes}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Notes: {details.notes}
+                    </p>
                   )}
-                  <p className="font-semibold mt-2">Total: ${total.toFixed(2)}</p>
+                  <p className="font-semibold mt-2">
+                    Total: ${total.toFixed(2)}
+                  </p>
                 </div>
               </div>
             )}
@@ -471,7 +412,7 @@ export function CartPanel() {
               )}
               {step === 1 && (
                 <Button className="flex-1" onClick={() => setStep(2)}>
-                  Next: Enter Your Details
+                  Next: Enter Details
                 </Button>
               )}
               {step === 2 && (
