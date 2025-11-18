@@ -7,6 +7,7 @@ import { X, Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useCart } from "./cart-provider";
 import { useRouter } from "next/navigation";
+import { isZipAllowed } from "@/lib/zipcodewhitelist";
 
 export type CartItem = {
   id: string;
@@ -79,6 +80,10 @@ export function CartPanel() {
   if (!isOpen) return null;
 
   const requiresAddress = details.fulfillMethod === "delivery";
+
+  const trimmedZip = details.address.zip.trim();
+  const zipAllowed = !trimmedZip || isZipAllowed(trimmedZip);
+
   const detailsValid =
     details.date &&
     details.time &&
@@ -86,7 +91,8 @@ export function CartPanel() {
       (details.address.line1.trim() &&
         details.address.city.trim() &&
         details.address.state.trim() &&
-        details.address.zip.trim()));
+        trimmedZip &&
+        zipAllowed));
 
   const startSquareCheckout = async () => {
     try {
@@ -334,17 +340,24 @@ export function CartPanel() {
                         })
                       }
                     />
-                    <input
-                      className="rounded-md border px-3 py-2 bg-background"
-                      placeholder="ZIP"
-                      value={details.address.zip}
-                      onChange={(e) =>
-                        setDetails({
-                          ...details,
-                          address: { ...details.address, zip: e.target.value },
-                        })
-                      }
-                    />
+                    <div>
+                      <input
+                        className="w-full rounded-md border px-3 py-2 bg-background"
+                        placeholder="ZIP"
+                        value={details.address.zip}
+                        onChange={(e) =>
+                          setDetails({
+                            ...details,
+                            address: { ...details.address, zip: e.target.value },
+                          })
+                        }
+                      />
+                      {!zipAllowed && trimmedZip && (
+                        <p className="mt-1 text-xs text-red-600">
+                          We do not deliver that far yet.
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   <textarea
@@ -380,7 +393,7 @@ export function CartPanel() {
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {details.address.line1}
-                    {details.address.line2 ? `, ${details.address.line2}` : ""}
+                    {details.address.line2 ? `, ${details.address.line2}` : ""}{" "}
                     {details.address.city ? `, ${details.address.city}` : ""}{" "}
                     {details.address.state} {details.address.zip}
                   </p>
@@ -427,7 +440,7 @@ export function CartPanel() {
               {step === 3 && (
                 <Button
                   className="flex-1 bg-green-600 hover:bg-green-700"
-                  disabled={isProcessing}
+                  disabled={isProcessing || !zipAllowed}
                   onClick={startSquareCheckout}
                 >
                   {isProcessing ? "Starting checkout..." : "Pay Online"}
