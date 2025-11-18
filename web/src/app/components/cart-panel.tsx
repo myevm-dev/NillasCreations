@@ -108,6 +108,7 @@ export function CartPanel() {
             quantity: i.quantity,
           })),
           pickupDate: details.date,
+          pickupTime: details.time, 
           pickupNotes: details.notes,
           deliveryAddress: details.address,
         }),

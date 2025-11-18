@@ -2,68 +2,43 @@
 import { NextResponse } from "next/server";
 import { SquareClient, SquareError } from "square";
 
-type DeliveryAddress = {
-  line1: string;
-  line2?: string;
-  city: string;
-  state: string;
-  zip: string;
+type CartItem = {
+  name: string;
+  price: number;
+  quantity: number;
 };
 
-function formatDeliveryNote(args: {
-  pickupDate?: string;
-  deliveryAddress?: DeliveryAddress | null;
+type DeliveryAddress = {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+};
+
+type CreateCheckoutBody = {
+  cart: CartItem[];
+  pickupDate?: string;   // delivery date
+  pickupTime?: string;   // delivery time (HH:mm)
   pickupNotes?: string;
-}) {
-  const { pickupDate, deliveryAddress, pickupNotes } = args;
-
-  const lines: string[] = [];
-
-  if (pickupDate) {
-    lines.push(`Date: ${pickupDate}`);
-  }
-
-  if (deliveryAddress) {
-    const { line1, line2, city, state, zip } = deliveryAddress;
-    if (line1) {
-      lines.push(
-        `Address: ${line1}${line2 ? `, ${line2}` : ""}`
-      );
-    }
-    if (city || state || zip) {
-      lines.push(
-        `         ${city || ""}${city && (state || zip) ? ", " : ""}${
-          state || ""
-        } ${zip || ""}`.trimEnd()
-      );
-    }
-  }
-
-  if (pickupNotes) {
-    lines.push(`Notes: ${pickupNotes}`);
-  }
-
-  if (lines.length === 0) {
-    return "";
-  }
-
-  return ["DELIVERY DETAILS", ...lines].join("\n");
-}
+  deliveryAddress?: DeliveryAddress;
+};
 
 export async function POST(req: Request) {
   try {
     const {
       cart,
       pickupDate,
+      pickupTime,
       pickupNotes,
       deliveryAddress,
-      customerName,
-      customerPhone,
-      customerEmail,
-    } = await req.json();
+    } = (await req.json()) as CreateCheckoutBody;
 
     if (!Array.isArray(cart) || cart.length === 0) {
-      return NextResponse.json({ error: "Cart cannot be empty" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Cart cannot be empty" },
+        { status: 400 }
+      );
     }
 
     const locationId = process.env.SQUARE_LOCATION_ID;
@@ -78,7 +53,7 @@ export async function POST(req: Request) {
 
     const toCents = (n: number) => BigInt(Math.round(n * 100));
 
-    const lineItems = cart.map((item: any) => ({
+    const lineItems: any[] = cart.map((item) => ({
       name: String(item.name),
       quantity: String(item.quantity ?? 1),
       basePriceMoney: {
@@ -87,17 +62,43 @@ export async function POST(req: Request) {
       },
     }));
 
-    // Metadata for API / future use
-    const metadata: Record<string, string> = {
-      source: "nillas-web",
-    };
+    // Build a human readable note that will show on the order in Dashboard
+    const noteParts: string[] = [];
 
+    if (pickupDate || pickupTime) {
+      noteParts.push(
+        `Delivery: ${pickupDate ?? "date TBA"}${
+          pickupTime ? ` at ${pickupTime}` : ""
+        }`
+      );
+    }
+
+    if (deliveryAddress) {
+      const addr = [
+        deliveryAddress.line1,
+        deliveryAddress.line2,
+        deliveryAddress.city,
+        deliveryAddress.state,
+        deliveryAddress.zip,
+      ]
+        .filter(Boolean)
+        .join(", ");
+      if (addr) {
+        noteParts.push(`Address: ${addr}`);
+      }
+    }
+
+    if (pickupNotes) {
+      noteParts.push(`Notes: ${pickupNotes}`);
+    }
+
+    const orderNote = noteParts.join(" | ") || undefined;
+
+    // Metadata is useful for webhooks / later lookup (not shown in Dashboard)
+    const metadata: Record<string, string> = { source: "nillas-web" };
     if (pickupDate) metadata.pickupDate = pickupDate;
+    if (pickupTime) metadata.pickupTime = pickupTime;
     if (pickupNotes) metadata.pickupNotes = pickupNotes;
-    if (customerName) metadata.customerName = customerName;
-    if (customerPhone) metadata.customerPhone = customerPhone;
-    if (customerEmail) metadata.customerEmail = customerEmail;
-
     if (deliveryAddress?.line1) metadata.addressLine1 = deliveryAddress.line1;
     if (deliveryAddress?.line2) metadata.addressLine2 = deliveryAddress.line2;
     if (deliveryAddress?.city) metadata.addressCity = deliveryAddress.city;
@@ -106,23 +107,21 @@ export async function POST(req: Request) {
 
     const client = new SquareClient({ token });
 
-    // Human readable note visible inside Square Orders
-    const orderNote = formatDeliveryNote({
-      pickupDate,
-      deliveryAddress,
-      pickupNotes,
-    });
+    // Cast to any so TS does not complain about note
+    const order: any = {
+      locationId,
+      lineItems,
+      metadata,
+      referenceId: `web-${Date.now()}`,
+    };
+
+    if (orderNote) {
+      order.note = orderNote;
+    }
 
     const resp = await client.checkout.paymentLinks.create({
       idempotencyKey: crypto.randomUUID(),
-      order: {
-        locationId,
-        lineItems,
-        metadata,
-        referenceId: `web-${Date.now()}`,
-        // This shows up clearly on the order in Dashboard
-        ...(orderNote ? { note: orderNote } : {}),
-      },
+      order,
       checkoutOptions: {
         redirectUrl: "https://www.nillascreations.com/order-confirmed",
       },
@@ -130,7 +129,10 @@ export async function POST(req: Request) {
 
     const url = resp.paymentLink?.url;
     if (!url) {
-      return NextResponse.json({ error: "No checkout URL returned" }, { status: 502 });
+      return NextResponse.json(
+        { error: "No checkout URL returned" },
+        { status: 502 }
+      );
     }
 
     return NextResponse.json({ checkoutUrl: url });
@@ -143,6 +145,9 @@ export async function POST(req: Request) {
     }
 
     console.error("create-checkout error", err);
-    return NextResponse.json({ error: "Failed to create checkout" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create checkout" },
+      { status: 500 }
+    );
   }
 }

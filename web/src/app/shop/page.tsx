@@ -41,7 +41,7 @@ const products = [
     id: 5,
     name: "12x Apple Cider Donuts",
     price: 60,
-    image: "/shopitemphotosoon.png",
+    image: "/ciderdonuts.png",
     description:
       "Tender apple cider donuts with cozy fall flavor in every bite.",
   },
@@ -63,9 +63,9 @@ const products = [
   },
   {
     id: 8,
-    name: "Pecan Praline Bunt Cake",
+    name: "Pecan Praline Bundt Cake",
     price: 32,
-    image: "/shopitemphotosoon.png",
+    image: "/bundtcake.png",
     description:
       "Buttery pecan bundt cake topped with a rich caramel-praline glaze.",
   },
@@ -73,7 +73,7 @@ const products = [
     id: 9,
     name: "Pumpkin Pie",
     price: 22,
-    image: "/shopitemphotosoon.png",
+    image: "/pumpkinpie.png",
     description:
       "Silky pumpkin filling in a flaky crust with warm fall spices.",
   },
@@ -81,7 +81,7 @@ const products = [
     id: 10,
     name: "Pecan Pie",
     price: 25,
-    image: "/shopitemphotosoon.png",
+    image: "/pecanpie.jpg",
     description:
       "Sweet, gooey pecan filling crowned with toasted caramelized pecans.",
   },
@@ -89,7 +89,7 @@ const products = [
     id: 11,
     name: "Deep Dish Dutch Apple Pie",
     price: 28,
-    image: "/shopitemphotosoon.png",
+    image: "/deepdish.png",
     description:
       "Deep dish apple pie with cinnamon spice and a buttery crumble topping.",
   },
@@ -97,7 +97,7 @@ const products = [
     id: 12,
     name: "Butterscotch Toffee Cookies",
     price: 25,
-    image: "/shopitemphotosoon.png",
+    image: "/toffeecookies.png",
     description:
       "Soft cookies packed with buttery toffee and sweet butterscotch chips.",
   },
@@ -108,7 +108,7 @@ const products = [
     price: 1,
     image: "/shopitemphotosoon.png",
     description:
-      "Nothing Here :).",
+      "Nothing Here :) Please do not order",
   },
 
   // {
