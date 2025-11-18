@@ -63,22 +63,47 @@ const products = [
   },
   {
     id: 8,
-    name: "TEST Chicka Cherry Pie ",
-    price: 1,
+    name: "Pecan Praline Bunt Cake",
+    price: 32,
     image: "/shopitemphotosoon.png",
     description:
-      "Nothing Here :).",
+      "Buttery pecan bundt cake topped with a rich caramel-praline glaze.",
   },
   {
     id: 9,
-    name: "TEST Flavored Water ",
-    price: 1,
+    name: "Pumpkin Pie",
+    price: 22,
     image: "/shopitemphotosoon.png",
     description:
-      "Nothing Here :).",
+      "Silky pumpkin filling in a flaky crust with warm fall spices.",
   },
   {
     id: 10,
+    name: "Pecan Pie",
+    price: 25,
+    image: "/shopitemphotosoon.png",
+    description:
+      "Sweet, gooey pecan filling crowned with toasted caramelized pecans.",
+  },
+  {
+    id: 11,
+    name: "Deep Dish Dutch Apple Pie",
+    price: 28,
+    image: "/shopitemphotosoon.png",
+    description:
+      "Deep dish apple pie with cinnamon spice and a buttery crumble topping.",
+  },
+  {
+    id: 12,
+    name: "Butterscotch Toffee Cookies",
+    price: 25,
+    image: "/shopitemphotosoon.png",
+    description:
+      "Soft cookies packed with buttery toffee and sweet butterscotch chips.",
+  },
+
+  {
+    id: 99,
     name: "TEST Bologna Sammy ",
     price: 1,
     image: "/shopitemphotosoon.png",
