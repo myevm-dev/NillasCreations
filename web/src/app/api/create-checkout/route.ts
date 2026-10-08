@@ -1,153 +1,35 @@
-// /workspaces/NillasCreations/web/src/app/api/create-checkout/route.ts
+import { createHmac } from "node:crypto";
 import { NextResponse } from "next/server";
-import { SquareClient, SquareError } from "square";
+import { checkoutSchema, checkoutSettings, prepareOrder } from "@/lib/checkout";
+import { apiError, readBody } from "@/lib/http";
+import { signReceipt } from "@/lib/receipts";
+import { squareRequest, StoreError } from "@/lib/square";
 
-type CartItem = {
-  name: string;
-  price: number;
-  quantity: number;
-};
-
-type DeliveryAddress = {
-  line1?: string;
-  line2?: string;
-  city?: string;
-  state?: string;
-  zip?: string;
-};
-
-type CreateCheckoutBody = {
-  cart: CartItem[];
-  pickupDate?: string;   // delivery date
-  pickupTime?: string;   // delivery time (HH:mm)
-  pickupNotes?: string;
-  deliveryAddress?: DeliveryAddress;
-};
-
+export const runtime = "nodejs";
 export async function POST(req: Request) {
   try {
-    const {
-      cart,
-      pickupDate,
-      pickupTime,
-      pickupNotes,
-      deliveryAddress,
-    } = (await req.json()) as CreateCheckoutBody;
-
-    if (!Array.isArray(cart) || cart.length === 0) {
-      return NextResponse.json(
-        { error: "Cart cannot be empty" },
-        { status: 400 }
-      );
-    }
-
-    const locationId = process.env.SQUARE_LOCATION_ID;
-    const token = process.env.SQUARE_ACCESS_TOKEN;
-
-    if (!token || !locationId) {
-      return NextResponse.json(
-        { error: "Missing SQUARE_ACCESS_TOKEN or SQUARE_LOCATION_ID in .env" },
-        { status: 500 }
-      );
-    }
-
-    const toCents = (n: number) => BigInt(Math.round(n * 100));
-
-    const lineItems: any[] = cart.map((item) => ({
-      name: String(item.name),
-      quantity: String(item.quantity ?? 1),
-      basePriceMoney: {
-        amount: toCents(Number(item.price)),
-        currency: "USD" as const,
-      },
-    }));
-
-    // Build a human readable note that will show on the order in Dashboard
-    const noteParts: string[] = [];
-
-    if (pickupDate || pickupTime) {
-      noteParts.push(
-        `Delivery: ${pickupDate ?? "date TBA"}${
-          pickupTime ? ` at ${pickupTime}` : ""
-        }`
-      );
-    }
-
-    if (deliveryAddress) {
-      const addr = [
-        deliveryAddress.line1,
-        deliveryAddress.line2,
-        deliveryAddress.city,
-        deliveryAddress.state,
-        deliveryAddress.zip,
-      ]
-        .filter(Boolean)
-        .join(", ");
-      if (addr) {
-        noteParts.push(`Address: ${addr}`);
-      }
-    }
-
-    if (pickupNotes) {
-      noteParts.push(`Notes: ${pickupNotes}`);
-    }
-
-    const orderNote = noteParts.join(" | ") || undefined;
-
-    // Metadata is useful for webhooks / later lookup (not shown in Dashboard)
-    const metadata: Record<string, string> = { source: "nillas-web" };
-    if (pickupDate) metadata.pickupDate = pickupDate;
-    if (pickupTime) metadata.pickupTime = pickupTime;
-    if (pickupNotes) metadata.pickupNotes = pickupNotes;
-    if (deliveryAddress?.line1) metadata.addressLine1 = deliveryAddress.line1;
-    if (deliveryAddress?.line2) metadata.addressLine2 = deliveryAddress.line2;
-    if (deliveryAddress?.city) metadata.addressCity = deliveryAddress.city;
-    if (deliveryAddress?.state) metadata.addressState = deliveryAddress.state;
-    if (deliveryAddress?.zip) metadata.addressZip = deliveryAddress.zip;
-
-    const client = new SquareClient({ token });
-
-    // Cast to any so TS does not complain about note
-    const order: any = {
-      locationId,
-      lineItems,
-      metadata,
-      referenceId: `web-${Date.now()}`,
-    };
-
-    if (orderNote) {
-      order.note = orderNote;
-    }
-
-    const resp = await client.checkout.paymentLinks.create({
-      idempotencyKey: crypto.randomUUID(),
-      order,
-      checkoutOptions: {
-        redirectUrl: "https://www.nillascreations.com/order-confirmed",
-      },
+    const input = checkoutSchema.parse(await readBody(req));
+    if (!input.expectedTotalCents) throw new StoreError("Please review your order total first.");
+    const config = checkoutSettings();
+    const { order, quote } = await prepareOrder(input);
+    if (input.expectedTotalCents !== quote.totalCents) throw new StoreError("The price changed. Please go back and review your updated total.", 409);
+    const idempotencyKey = createHmac("sha256", config.secret).update(JSON.stringify(order)).digest("hex").slice(0, 45);
+    const response = await squareRequest<{ payment_link?: { url?: string; order_id?: string } }>("/online-checkout/payment-links", {
+      idempotency_key: idempotencyKey, order,
+      checkout_options: { redirect_url: `${config.origin}/order-confirmed?reference=${input.requestId}`, allow_tipping: false, ask_for_shipping_address: false,
+        accepted_payment_methods: { apple_pay: true, google_pay: true, cash_app_pay: false, afterpay_clearpay: false } },
+      pre_populated_data: { buyer_email: input.customer.email, buyer_phone_number: input.customer.phone },
     });
-
-    const url = resp.paymentLink?.url;
-    if (!url) {
-      return NextResponse.json(
-        { error: "No checkout URL returned" },
-        { status: 502 }
-      );
+    const link = response.payment_link;
+    if (!link?.url || !link.order_id) throw new StoreError("Square did not return a checkout link. Please try again.", 502);
+    const url = new URL(link.url);
+    if (url.protocol !== "https:" || !(url.hostname === "square.link" || url.hostname.endsWith(".square.site") || url.hostname === "connect.squareupsandbox.com" || url.hostname === "connect.squareup.com")) {
+      throw new StoreError("Square returned an invalid checkout link.", 502);
     }
-
-    return NextResponse.json({ checkoutUrl: url });
-  } catch (err) {
-    if (err instanceof SquareError) {
-      return NextResponse.json(
-        { error: err.message, details: err.body ?? null },
-        { status: err.statusCode ?? 500 }
-      );
-    }
-
-    console.error("create-checkout error", err);
-    return NextResponse.json(
-      { error: "Failed to create checkout" },
-      { status: 500 }
-    );
-  }
+    const res = NextResponse.json({ checkoutUrl: link.url });
+    res.headers.set("Cache-Control", "no-store");
+    res.cookies.set("nillas-receipt", signReceipt({ orderId: link.order_id, reference: input.requestId, expires: Date.now() + 7 * 86400000 }),
+      { httpOnly: true, secure: config.origin.startsWith("https://"), sameSite: "lax", path: "/", maxAge: 7 * 86400 });
+    return res;
+  } catch (error) { return apiError(error); }
 }

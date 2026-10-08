@@ -2,23 +2,16 @@ import type React from "react"
 import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
-import { Playfair_Display } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { CartProvider } from "../app/components/cart-provider"
 import { Suspense } from "react"
 import "./globals.css"
 import { Footer } from "../app/components/Footer";
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-  display: "swap",
-})
-
 export const metadata: Metadata = {
   title: "Nilla's Creations | Custom Baking & Pastry Service",
-  description: "Handcrafted baked goods made with love",
-  generator: "v0.app",
+  description: "Freshly baked goods in El Paso. $16 delivery within a 20-mile radius of 79936. Secure card checkout with Square.",
+
 }
 
 export default function RootLayout({
@@ -28,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${playfair.variable}`}>
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <Suspense fallback={null}>
           <CartProvider>{children}</CartProvider>
         </Suspense>

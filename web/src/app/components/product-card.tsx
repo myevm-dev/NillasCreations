@@ -7,13 +7,7 @@ import { Button } from "./ui/button"
 import { Card, CardContent, CardFooter } from "./ui/card"
 import { useCart } from "./cart-provider"
 
-interface Product {
-  id: number
-  name: string
-  price: number
-  image: string
-  description: string
-}
+import type { Product } from "@/lib/products"
 
 export function ProductCard({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1)
@@ -39,6 +33,8 @@ export function ProductCard({ product }: { product: Product }) {
           src={product.image || "/placeholder.svg"}
           alt={product.name}
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          unoptimized={product.image.startsWith("https://")}
           className="object-cover group-hover:scale-105 transition-transform duration-300"
         />
       </div>
@@ -53,6 +49,7 @@ export function ProductCard({ product }: { product: Product }) {
             variant="ghost"
             size="icon"
             className="h-10 w-10 rounded-r-none"
+            aria-label={`Decrease ${product.name}`}
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
           >
             <Minus className="h-4 w-4" />
@@ -62,7 +59,9 @@ export function ProductCard({ product }: { product: Product }) {
             variant="ghost"
             size="icon"
             className="h-10 w-10 rounded-l-none"
-            onClick={() => setQuantity(quantity + 1)}
+            aria-label={`Increase ${product.name}`}
+            disabled={quantity >= 24}
+            onClick={() => setQuantity(Math.min(24, quantity + 1))}
           >
             <Plus className="h-4 w-4" />
           </Button>
