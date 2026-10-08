@@ -14,7 +14,7 @@ const subscriptionTiers = [
       "1× Loaf Banana or Pumpkin Bread (8 slices)",
       "12× Chocolate Chip Cookies",
       "9× Brownies",
-      "Weekly delivery included",
+      "Local delivery available for $16",
       "Flexible pause/skip/cancel"
     ],
   },
@@ -27,7 +27,7 @@ const subscriptionTiers = [
       "18× Rice Crispy Bars",
       "1× Loaf Banana or Pumpkin Bread (8 slices)",
       "12× White Choc Cranberry Oatmeal Cookies",
-      "Weekly delivery included",
+      "Local delivery available for $16",
       "Priority support",
       "Flexible pause/skip/cancel"
     ],
@@ -42,7 +42,7 @@ const subscriptionTiers = [
       "30× Chocolate Cake Pops",
       "1× Loaf Banana Bread + 1× Loaf Pumpkin Bread",
       "12× Blueberry Muffins & 12× Chocolate Chip Cookies",
-      "Weekly delivery included",
+      "Local delivery available for $16",
       "Priority support",
       "Custom requests included",
       "Flexible pause/skip/cancel"
@@ -68,7 +68,7 @@ export default function SubscribePage() {
           </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                 Weekly bakery bundles made for <strong>coffee shops, offices, salons, and co-working spaces</strong>.
-                Fresh, consistent, and ready within 48 hours. <br/>save with our subscription pricing.
+                Fresh, consistent, and ready within 48 hours. <br/>Contact us to arrange a recurring order. These plans are arranged directly and are not billed automatically.
             </p>
         </div>
       </section>
@@ -106,9 +106,8 @@ export default function SubscribePage() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full gap-2" variant={tier.popular ? "default" : "outline"} size="lg">
-                    Subscribe Coming Soon
-                    <ArrowRight className="h-4 w-4" />
+                  <Button asChild className="w-full gap-2" variant={tier.popular ? "default" : "outline"} size="lg">
+                    <Link href="mailto:contact@nillascreations.com">Ask about weekly orders<ArrowRight className="h-4 w-4" /></Link>
                   </Button>
                 </CardFooter>
               </Card>

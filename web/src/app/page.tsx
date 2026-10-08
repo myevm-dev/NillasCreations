@@ -21,8 +21,9 @@ export default function HomePage() {
                 Freshly baked joy, made to order
               </h1>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                From classic banana bread to custom sweet treats, every order is baked fresh to your needs, ready within 48 hours or when you need it. Taste the comfort of homemade, every time.
+                From classic banana bread to custom sweet treats, every order is baked fresh to your needs, with at least 48 hours notice. Taste the comfort of homemade, every time.
               </p>
+              <p className="text-sm font-medium text-primary">El Paso · $16 local delivery · 20-mile radius from 79936</p>
               <div className="flex flex-wrap gap-4">
                 <Button asChild size="lg" className="gap-2">
                   <Link href="/shop">

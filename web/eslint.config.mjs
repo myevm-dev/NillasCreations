@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const compat = new FlatCompat({ baseDirectory: __dirname });
 
-export default [
+const config = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   { rules: {
       "react/no-unescaped-entities": "off",
@@ -15,3 +15,4 @@ export default [
   },
   { ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts"] }
 ];
+export default config;
